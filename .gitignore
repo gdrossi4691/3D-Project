@@ -1,0 +1,44 @@
+###################
+# compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.pdb
+*.dll.config
+*.cache
+*.suo
+*.sdf
+*.ppm
+####################
+# VS Upgrade stuff #
+####################
+UpgradeLog.XML
+_UpgradeReport_Files/
+###############
+# Directories #
+###############
+Debug/
+Release/
+ipch/
+bin/
+obj/
+############
+# Packages #
+############
+# it is better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+######################
+# Logs and databases #
+######################
+*.log
+*.sqlite
