@@ -1,0 +1,48 @@
+/* Push these matrices*/
+GzMatrix rotateX2=
+{
+	1,0,0,0,
+	0,.939,-0.342,0,
+	0,.3420,.939,0,
+	0,0,0,1
+};
+GzMatrix rotateZ2=
+{
+		.939,-0.342,0,0,
+	.3420,.939,0,0,
+	0,0,1,0,
+
+	0,0,0,1
+};
+GzMatrix rotateY2=
+{
+	0,0,-1,0,
+	0,1,0,0,
+	1,0,0,0,
+	0,0,0,1
+};
+/*Update this position*/
+#if 1 	/* set up app-defined camera if desired, else use camera defaults */
+    camera.position[X] = 0.2;      
+  	camera.position[Y] = -0.7;
+  	camera.position[Z] = -50.8;
+
+  	camera.lookat[X] = 1.8;
+  	camera.lookat[Y] = 0.7;
+  	camera.lookat[Z] = 4.5;
+
+  	camera.worldup[X] = -0.2;
+  	camera.worldup[Y] = 1.0;
+  	camera.worldup[Z] = 0.0;
+
+    camera.FOV = 53.7;  
+
+
+/*push these Matrix*/
+status |= GzPushMatrix(m_pRender, scale);  
+	status |= GzPushMatrix(m_pRender, rotateY); 
+	status |= GzPushMatrix(m_pRender, rotateX); 
+	status|=GzPushMatrix(m_pRender,rotateX2);
+	status|=GzPushMatrix(m_pRender,rotateZ2);
+	status|=GzPushMatrix(m_pRender,rotateY2);
+	status|=GzPushMatrix(m_pRender,rotateY2);
