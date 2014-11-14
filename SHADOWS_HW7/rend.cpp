@@ -383,7 +383,7 @@ int GzPutAttribute(GzRender	*render, int numAttributes, GzToken	*nameList,
 			GzLight light = *((GzLight*)(pointer));
 			render->lights[render->numlights] = light;
 			// update with other init procedure for perspective map 
-			GzNewShadowMapCamera((GzRender*)render->lights_shadow_maps[render->numlights], &light, &(render->bbox));
+			GzNewShadowMapCamera(&render->lights_shadow_maps[render->numlights], &light, &(render->bbox));
 			render->numlights++;
 		}
 		if (token == GZ_AMBIENT_LIGHT) {

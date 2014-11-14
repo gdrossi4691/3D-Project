@@ -29,7 +29,7 @@ typedef struct {
 
 #ifndef GZRENDER
 #define GZRENDER
-typedef struct {			/* define a renderer */
+typedef struct GzRender {			/* define a renderer */
   GzDisplay	*display;
   GzCamera		camera;
   short		matlevel;  /* top of stack -> current xform */
@@ -41,7 +41,8 @@ typedef struct {			/* define a renderer */
   int			interp_mode;
   int			numlights;
   GzLight		lights[MAX_LIGHTS];
-  void			*lights_shadow_maps[MAX_LIGHTS];
+//  struct GzRender*	lights_shadow_maps[MAX_LIGHTS];
+  struct GzRender*	lights_shadow_maps[MAX_LIGHTS];
   GzLight		ambientlight;
   GzColor		Ka, Kd, Ks;
   float		    spec;		/* specular power */
@@ -87,9 +88,9 @@ int GzScaleMat(GzCoord scale, GzMatrix mat);
 // HW7
 
 // shadow map initialization applicable for both visibility functions (step I)
-int GzNewShadowMapCamera(GzRender* map, GzLight* light, GzBoundingBox* bbox);
+int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox);
 // shadow map initialization applicable only for perspective shadow mapping (step II)
-int GzNewPerspectiveShadowMapCamera(GzRender* map, GzLight* light, GzBoundingBox bbox);
+int GzNewPerspectiveShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox bbox);
 // free memory
 int GzDeleteShadowMapCamera(GzRender* map);
 

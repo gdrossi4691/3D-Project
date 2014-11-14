@@ -312,7 +312,13 @@ int Application5::Render()
 				GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
 			}
 			#endif
-	} 
+			// TODO: shadow map rendeering
+			for (int i = 0; i < m_pRender->numlights; i++) {
+				GzRender* map = m_pRender->lights_shadow_maps[i];
+				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
+			}
+
+	}
 	#ifdef AA_ENABLED
 	for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {
 		m_pDisplay->fbuf[l].red   = 0.0;
