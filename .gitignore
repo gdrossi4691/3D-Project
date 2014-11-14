@@ -37,6 +37,7 @@ obj/
 *.rar
 *.tar
 *.zip
+*.opensdf
 ######################
 # Logs and databases #
 ######################
