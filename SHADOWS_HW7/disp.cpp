@@ -29,6 +29,8 @@ int GzNewDisplay(GzDisplay	**display, int xRes, int yRes)
 	GzDisplay* disp = new GzDisplay;
 	disp->xres = xRes;
 	disp->yres = yRes;
+	disp->x_shift = 0;
+	disp->y_shift = 0;
 	disp->fbuf = new GzPixel[xRes * yRes];
 	*display = disp;
 	return GZ_SUCCESS;
