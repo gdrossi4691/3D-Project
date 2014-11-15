@@ -207,9 +207,6 @@ GzMatrix Translate2=
 		nameListLights[0] = GZ_BBOX;
         valueListLights[0] = (GzPointer)&bbox;
         status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
-		for (int i = 0; i < m_pRender->numlights; i++)
-			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
-
 
         nameListLights[0] = GZ_DIRECTIONAL_LIGHT;
         valueListLights[0] = (GzPointer)&light1;
