@@ -37,6 +37,7 @@ typedef struct GzRender {			/* define a renderer */
   GzMatrix		Ximage_im[MATLEVELS];	/* stack of xforms (Xsm) */
   GzMatrix		Xnorm[MATLEVELS];	/* xforms for norms (Xim) */
   GzMatrix		Xsp;		 /* NDC to screen (pers-to-screen) */
+  GzMatrix		Xwi;		/* image space to world */
   GzColor		flatcolor;  /* color for flat shaded triangles */
   int			interp_mode;
   int			numlights;
@@ -55,7 +56,8 @@ typedef struct GzRender {			/* define a renderer */
 
 
 short	ctoi(float color);
-
+void multiplyMatrixByVector(float pX, float pY, float pZ, GzMatrix matrix, float* x, float* y, float* z, float* w); 
+void GzInitCameraXiw(GzRender *render);
 // Function declaration
 // HW2
 int GzNewRender(GzRender **render, GzDisplay *display);
