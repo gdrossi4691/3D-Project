@@ -19,7 +19,7 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define INFILE  "newmodel.asc"
+#define INFILE  "ppot_.asc"
 #define OUTFILE "output.ppm"
 
 #define IMAGE_SIZE  400
@@ -88,29 +88,6 @@ int Application5::Initialize()
 
 	status |= GzNewRender(&m_pRender, m_pDisplay); 
 
-	GzMatrix rotateX2=
-	{
-		1,0,0,0,
-		0,.939,-0.342,0,
-		0,.3420,.939,0,
-		0,0,0,1
-	};
-	GzMatrix rotateZ2=
-	{
-			.939,-0.342,0,0,
-		.3420,.939,0,0,
-		0,0,1,0,
-
-		0,0,0,1
-	};
-	GzMatrix rotateY2=
-	{
-		0,0,-1,0,
-		0,1,0,0,
-		1,0,0,0,
-		0,0,0,1
-	};
-
 /* Translation matrix */
 GzMatrix	scale = 
 { 
@@ -137,22 +114,6 @@ GzMatrix	rotateY =
 }; 
 
 #if 0 	/* set up app-defined camera if desired, else use camera defaults */
-/*Update this position*/
-#if 1 	/* set up app-defined camera if desired, else use camera defaults */
-    camera.position[X] = 0.2;      
-  	camera.position[Y] = -0.7;
-  	camera.position[Z] = -50.8;
-
-  	camera.lookat[X] = 1.8;
-  	camera.lookat[Y] = 0.7;
-  	camera.lookat[Z] = 4.5;
-
-  	camera.worldup[X] = -0.2;
-  	camera.worldup[Y] = 1.0;
-  	camera.worldup[Z] = 0.0;
-
-    camera.FOV = 53.7;  
-	/*
     camera.position[X] = -3;
     camera.position[Y] = -25;
     camera.position[Z] = -4;
@@ -166,7 +127,7 @@ GzMatrix	rotateY =
     camera.worldup[Z] = 0.0;
 
     camera.FOV = 63.7;              /* degrees *              /* degrees */
-	*/
+
 	status |= GzPutCamera(m_pRender, &camera); 
 	
 #endif 
@@ -260,21 +221,10 @@ GzMatrix	rotateY =
 		for (int i = 0; i < m_pRender->numlights; i++)
 			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
 
-	/*
-	status |= GzPushMatrix(m_pRender, scale);  
-	status |= GzPushMatrix(m_pRender, rotateY); 
-	status |= GzPushMatrix(m_pRender, rotateX); 
-	*/
-	
-	/*push these Matrix*/
-	status |= GzPushMatrix(m_pRender, scale);  
-	status |= GzPushMatrix(m_pRender, rotateY); 
-	status |= GzPushMatrix(m_pRender, rotateX); 
-	status|=GzPushMatrix(m_pRender,rotateX2);
-	status|=GzPushMatrix(m_pRender,rotateZ2);
-	status|=GzPushMatrix(m_pRender,rotateY2);
-	status|=GzPushMatrix(m_pRender,rotateY2);
 
+	status |= GzPushMatrix(m_pRender, scale);  
+	status |= GzPushMatrix(m_pRender, rotateY); 
+	status |= GzPushMatrix(m_pRender, rotateX); 
 
 	if (status) exit(GZ_FAILURE); 
 
