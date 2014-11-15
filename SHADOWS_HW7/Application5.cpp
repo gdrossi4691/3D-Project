@@ -19,10 +19,10 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define INFILE  "ppot_.asc"
+#define INFILE  "newmodel.asc"
 #define OUTFILE "output.ppm"
 
-#define IMAGE_SIZE  400
+#define IMAGE_SIZE  700
 
 #define AA_ENABLED
 #undef AA_ENABLED
@@ -111,10 +111,33 @@ GzMatrix	rotateY =
 	0.0,	1.0,	0.0,	0.0, 
 	0.5,	0.0,	.866,	0.0, 
 	0.0,	0.0,	0.0,	1.0 
-}; 
+};
 
-#if 0 	/* set up app-defined camera if desired, else use camera defaults */
-    camera.position[X] = -3;
+GzMatrix rotateX2=
+{
+	1,0,0,0,
+	0,.939,-0.342,0,
+	0,.3420,.939,0,
+	0,0,0,1
+};
+GzMatrix rotateZ2=
+{
+		.939,-0.342,0,0,
+	.3420,.939,0,0,
+	0,0,1,0,
+
+	0,0,0,1
+};
+GzMatrix rotateY2=
+{
+	0,0,-1,0,
+	0,1,0,0,
+	1,0,0,0,
+	0,0,0,1
+};
+
+#if 1 	/* set up app-defined camera if desired, else use camera defaults */
+    /*camera.position[X] = -3;
     camera.position[Y] = -25;
     camera.position[Z] = -4;
 
@@ -127,7 +150,20 @@ GzMatrix	rotateY =
     camera.worldup[Z] = 0.0;
 
     camera.FOV = 63.7;              /* degrees *              /* degrees */
+ 
+camera.position[X] = 0.2;      
+  	camera.position[Y] = -0.7;
+  	camera.position[Z] = -50.8;
 
+  	camera.lookat[X] = 1.8;
+  	camera.lookat[Y] = 0.7;
+  	camera.lookat[Z] = 4.5;
+
+  	camera.worldup[X] = -0.2;
+  	camera.worldup[Y] = 1.0;
+  	camera.worldup[Z] = 0.0;
+
+    camera.FOV = 53.7;    
 	status |= GzPutCamera(m_pRender, &camera); 
 	
 #endif 
@@ -222,9 +258,13 @@ GzMatrix	rotateY =
 			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
 
 
-	status |= GzPushMatrix(m_pRender, scale);  
+		status |= GzPushMatrix(m_pRender, scale);  
 	status |= GzPushMatrix(m_pRender, rotateY); 
 	status |= GzPushMatrix(m_pRender, rotateX); 
+	status|=GzPushMatrix(m_pRender,rotateX2);
+	status|=GzPushMatrix(m_pRender,rotateZ2);
+	status|=GzPushMatrix(m_pRender,rotateY2);
+	status|=GzPushMatrix(m_pRender,rotateY2);
 
 	if (status) exit(GZ_FAILURE); 
 
