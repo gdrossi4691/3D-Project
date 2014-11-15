@@ -135,6 +135,19 @@ GzMatrix rotateY2=
 	1,0,0,0,
 	0,0,0,1
 };
+GzMatrix rotateY3=
+{
+	0.866,0,0.5,0,
+	0,1,0,0,
+	-0.5,0,0.866,0,
+	0,0,0,1
+};
+GzMatrix Translate2=
+{ 1,0,0,1,
+0,1,0,0,
+0,0,1,0,
+0,0,0,1
+};
 
 #if 1 	/* set up app-defined camera if desired, else use camera defaults */
     /*camera.position[X] = -3;
@@ -151,7 +164,7 @@ GzMatrix rotateY2=
 
     camera.FOV = 63.7;              /* degrees *              /* degrees */
  
-camera.position[X] = 0.2;      
+    camera.position[X] = 0.2;      
   	camera.position[Y] = -0.7;
   	camera.position[Z] = -50.8;
 
@@ -265,7 +278,8 @@ camera.position[X] = 0.2;
 	status|=GzPushMatrix(m_pRender,rotateZ2);
 	status|=GzPushMatrix(m_pRender,rotateY2);
 	status|=GzPushMatrix(m_pRender,rotateY2);
-
+	status|=GzPushMatrix(m_pRender,rotateY3);
+	status|=GzPushMatrix(m_pRender,Translate2);
 	if (status) exit(GZ_FAILURE); 
 
 	if (status) 
