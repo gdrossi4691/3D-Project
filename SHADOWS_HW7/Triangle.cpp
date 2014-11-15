@@ -202,7 +202,7 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 	multiplyMatrixByVector(x_im, y_im, z_im, render->Xwi, &x, &y, &z, &w);
 	
 	for (int i = 0; i < render->numlights; i++) {
-		float visibility = GzPCFVisibilityFn(x, y, z, (GzRender*)&render->lights_shadow_maps[i], &render->lights[i]);
+		float visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 
 		float lx = render->lights[i].position[0] - x_im;
 		float ly = render->lights[i].position[1] - y_im;
