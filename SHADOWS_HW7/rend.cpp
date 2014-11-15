@@ -6,7 +6,7 @@
 #include	"Gz.h"
 #include	"rend.h"
 
-void multiplyMatrixByVector(float pX, float pY, float pZ, GzMatrix matrix, float* x, float* y, float* z, float* w); 
+
 /* NOT part of API - just for general assistance */
 
 short	ctoi(float color)		/* convert float color to GzIntensity short */
