@@ -15,9 +15,20 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	(*map)->shift_y = 0.0;
 
 	// temprorary stub:
-	(*map)->matlevel = 1;
+	(*map)->matlevel = 0;
 	(*map)->interp_mode = GZ_FLAT;
 	GzNewDisplay(&(*map)->display, 512, 512);
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			(*map)->Xsp[i][j] = 0.0;
+	(*map)->Xsp[0][0] = ((double)(*map)->display->xres / 2.0);
+	(*map)->Xsp[1][1] = (-(double)(*map)->display->yres / 2.0);
+	(*map)->Xsp[2][2] = INT_MAX;
+	(*map)->Xsp[0][3] = ((double)(*map)->display->xres / 2.0);
+	(*map)->Xsp[1][3] = ((double)(*map)->display->yres / 2.0);
+	(*map)->Xsp[3][3] = 1.0;
+
 	// TODO:
 	// calculate the FOV - method 1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
