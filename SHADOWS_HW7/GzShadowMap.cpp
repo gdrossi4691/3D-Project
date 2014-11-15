@@ -28,23 +28,15 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	
 	float diagono_distance_on_the_plane = sqrt((bbox->Xmax- bbox->Xmin)*(bbox->Xmax- bbox->Xmin) + (bbox->Ymax- bbox->Ymax)*(bbox->Ymax- bbox->Ymin) + (bbox->Ymax- bbox->Zmax)-(bbox->Ymax- bbox->Zmin));
 	 
-	// find the shortest path from the camera to the plane
-	
-	float* light_position =  light->position;
-	float light_x = *light_position;
-	*light_position++;
-	float light_y = *light_position;
-	*light_position++;
-	float light_z = *light_position;
-	
-	float x_short1 =  abs(light_x-bbox->Xmax);
-	float x_short2 =  abs(light_x-bbox->Xmin);
+	// find the shortest path from the camera to the point
+	float x_short1 =  abs(light->position[0]-bbox->Xmax);
+	float x_short2 =  abs(light->position[0]-bbox->Xmin);
 
-	float y_short1 =  abs(light_y-bbox->Ymax);
-	float y_short2 =  abs(light_y-bbox->Ymin);
+	float y_short1 =  abs(light->position[1]-bbox->Ymax);
+	float y_short2 =  abs(light->position[1]-bbox->Ymin);
 
-	float z_short1 =  abs(light_z-bbox->Zmax);
-	float z_short2 =  abs(light_z-bbox->Zmin);
+	float z_short1 =  abs(light->position[2]-bbox->Zmax);
+	float z_short2 =  abs(light->position[2]-bbox->Zmin);
 
 	float x_MIN = x_short1;
 	if(x_short1>x_short2){
@@ -70,7 +62,6 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 
 	float FOV_in_radius = (diagono_distance_on_the_plane/distance_from_camera_to_center_cube);
 
-	GzCoord worldup = {0,1,0};
 
 	(*map)->camera.FOV =  FOV_in_radius;
 	(*map)->camera.position[0] = (*light).position[0];
@@ -79,13 +70,10 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	(*map)->camera.lookat[0] = look_at_point[0];
 	(*map)->camera.lookat[1] = look_at_point[1];
 	(*map)->camera.lookat[2] = look_at_point[2];
-	(*map)->camera.worldup[0] = worldup[0];
-	(*map)->camera.worldup[1] = worldup[1];
-	(*map)->camera.worldup[2] = worldup[2];
-	GzInitCameraXiw(*map);
+	(*map)->camera.worldup[0] = 0;
+	(*map)->camera.worldup[1] = 1;
+	(*map)->camera.worldup[2] = 0;
 	GzBeginRender(*map);
-
-	
 	return GZ_SUCCESS;
 }
 
