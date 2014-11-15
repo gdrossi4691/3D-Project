@@ -56,6 +56,7 @@ typedef struct GzRender {			/* define a renderer */
 
 short	ctoi(float color);
 void multiplyMatrixByVector(float pX, float pY, float pZ, GzMatrix matrix, float* x, float* y, float* z, float* w); 
+void GzInitCameraXiw(GzRender *render);
 // Function declaration
 // HW2
 int GzNewRender(GzRender **render, GzDisplay *display);

@@ -204,6 +204,13 @@ GzMatrix Translate2=
         /*
          * Tokens associated with light parameters
          */
+		nameListLights[0] = GZ_BBOX;
+        valueListLights[0] = (GzPointer)&bbox;
+        status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
+		for (int i = 0; i < m_pRender->numlights; i++)
+			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
+
+
         nameListLights[0] = GZ_DIRECTIONAL_LIGHT;
         valueListLights[0] = (GzPointer)&light1;
 		nameListLights[1] = GZ_DIRECTIONAL_LIGHT;
@@ -264,28 +271,21 @@ GzMatrix Translate2=
 #endif
         status |= GzPutAttribute(m_pRender, 6, nameListShader, valueListShader);
 
-		nameListLights[0] = GZ_BBOX;
-        valueListLights[0] = (GzPointer)&bbox;
-        status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
-		for (int i = 0; i < m_pRender->numlights; i++)
-			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
-
-
 		status |= GzPushMatrix(m_pRender, scale);  
-	status |= GzPushMatrix(m_pRender, rotateY); 
-	status |= GzPushMatrix(m_pRender, rotateX); 
-	status|=GzPushMatrix(m_pRender,rotateX2);
-	status|=GzPushMatrix(m_pRender,rotateZ2);
-	status|=GzPushMatrix(m_pRender,rotateY2);
-	status|=GzPushMatrix(m_pRender,rotateY2);
-	status|=GzPushMatrix(m_pRender,rotateY3);
-	status|=GzPushMatrix(m_pRender,Translate2);
-	if (status) exit(GZ_FAILURE); 
+		status |= GzPushMatrix(m_pRender, rotateY); 
+		status |= GzPushMatrix(m_pRender, rotateX); 
+		status|=GzPushMatrix(m_pRender,rotateX2);
+		status|=GzPushMatrix(m_pRender,rotateZ2);
+		status|=GzPushMatrix(m_pRender,rotateY2);
+		status|=GzPushMatrix(m_pRender,rotateY2);
+		status|=GzPushMatrix(m_pRender,rotateY3);
+		status|=GzPushMatrix(m_pRender,Translate2);
+		if (status) exit(GZ_FAILURE); 
 
-	if (status) 
-		return(GZ_FAILURE); 
-	else 
-		return(GZ_SUCCESS); 
+		if (status) 
+			return(GZ_FAILURE); 
+		else 
+			return(GZ_SUCCESS); 
 }
 
 int Application5::Render() 
