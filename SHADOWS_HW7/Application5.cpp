@@ -218,6 +218,8 @@ GzMatrix	rotateY =
 		nameListLights[0] = GZ_BBOX;
         valueListLights[0] = (GzPointer)&bbox;
         status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
+		for (int i = 0; i < m_pRender->numlights; i++)
+			status |= GzPutAttribute(m_pRender->lights_shadow_maps[i], 1, nameListLights, valueListLights);
 
 
 	status |= GzPushMatrix(m_pRender, scale);  
