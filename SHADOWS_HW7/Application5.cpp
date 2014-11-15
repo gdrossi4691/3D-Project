@@ -313,17 +313,17 @@ int Application5::Render()
 	nameListTriangle[1] = GZ_NORMAL; 
 	nameListTriangle[2] = GZ_TEXTURE_INDEX;  
 
+
+	// STEP I
+
 	// I/O File open
 	FILE *infile;
-	if( (infile  = fopen( INFILE , "r" )) == NULL )
-	{
+	if( (infile  = fopen( INFILE , "r" )) == NULL )	{
          AfxMessageBox( "The input file was not opened\n" );
 		 return GZ_FAILURE;
 	}
-
 	FILE *outfile;
-	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL )
-	{
+	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
          AfxMessageBox( "The output file was not opened\n" );
 		 return GZ_FAILURE;
 	}
@@ -333,26 +333,82 @@ int Application5::Render()
 	* and render each triangle 
 	*/ 
 	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
-		fscanf(infile, "%f %f %f %f %f %f %f %f", 
-		&(vertexList[0][0]), &(vertexList[0][1]),  
-		&(vertexList[0][2]), 
-		&(normalList[0][0]), &(normalList[0][1]), 	
-		&(normalList[0][2]), 
-		&(uvList[0][0]), &(uvList[0][1]) ); 
-		fscanf(infile, "%f %f %f %f %f %f %f %f", 
-		&(vertexList[1][0]), &(vertexList[1][1]), 	
-		&(vertexList[1][2]), 
-		&(normalList[1][0]), &(normalList[1][1]), 	
-		&(normalList[1][2]), 
-		&(uvList[1][0]), &(uvList[1][1]) ); 
-		fscanf(infile, "%f %f %f %f %f %f %f %f", 
-		&(vertexList[2][0]), &(vertexList[2][1]), 	
-		&(vertexList[2][2]), 
-		&(normalList[2][0]), &(normalList[2][1]), 	
-		&(normalList[2][2]), 
-		&(uvList[2][0]), &(uvList[2][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[0][0]), &(vertexList[0][1]),  
+			&(vertexList[0][2]), 
+			&(normalList[0][0]), &(normalList[0][1]), 	
+			&(normalList[0][2]), 
+			&(uvList[0][0]), &(uvList[0][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[1][0]), &(vertexList[1][1]), 	
+			&(vertexList[1][2]), 
+			&(normalList[1][0]), &(normalList[1][1]), 	
+			&(normalList[1][2]), 
+			&(uvList[1][0]), &(uvList[1][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[2][0]), &(vertexList[2][1]), 	
+			&(vertexList[2][2]), 
+			&(normalList[2][0]), &(normalList[2][1]), 	
+			&(normalList[2][2]), 
+			&(uvList[2][0]), &(uvList[2][1]) ); 
 
-		/* 
+			valueListTriangle[0] = (GzPointer)vertexList; 
+			valueListTriangle[1] = (GzPointer)normalList; 
+			valueListTriangle[2] = (GzPointer)uvList; 
+			// shadow map rendeering
+			for (int i = 0; i < m_pRender->numlights; i++) {
+				GzRender* map = m_pRender->lights_shadow_maps[i];
+				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
+			}
+
+	}
+	
+	/* 
+	 * Close file
+	 */ 
+	if( fclose( infile ) )
+      AfxMessageBox( "The input file was not closed\n" );
+	if( fclose( outfile ) )
+      AfxMessageBox( "The output file was not closed\n" );
+ 
+
+	// STEP II
+	
+	// I/O File open
+	if( (infile  = fopen( INFILE , "r" )) == NULL ) {
+         AfxMessageBox( "The input file was not opened\n" );
+		 return GZ_FAILURE;
+	} 
+	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
+         AfxMessageBox( "The output file was not opened\n" );
+		 return GZ_FAILURE;
+	}
+
+	/* 
+	* Walk through the list of triangles, set color 
+	* and render each triangle 
+	*/ 
+	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[0][0]), &(vertexList[0][1]),  
+			&(vertexList[0][2]), 
+			&(normalList[0][0]), &(normalList[0][1]), 	
+			&(normalList[0][2]), 
+			&(uvList[0][0]), &(uvList[0][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[1][0]), &(vertexList[1][1]), 	
+			&(vertexList[1][2]), 
+			&(normalList[1][0]), &(normalList[1][1]), 	
+			&(normalList[1][2]), 
+			&(uvList[1][0]), &(uvList[1][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[2][0]), &(vertexList[2][1]), 	
+			&(vertexList[2][2]), 
+			&(normalList[2][0]), &(normalList[2][1]), 	
+			&(normalList[2][2]), 
+			&(uvList[2][0]), &(uvList[2][1]) ); 
+
+			/* 
 			* Set the value pointers to the first vertex of the 	
 			* triangle, then feed it to the renderer 
 			* NOTE: this sequence matches the nameList token sequence
@@ -368,12 +424,6 @@ int Application5::Render()
 				GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
 			}
 			#endif
-			// TODO: shadow map rendeering
-			for (int i = 0; i < m_pRender->numlights; i++) {
-				GzRender* map = m_pRender->lights_shadow_maps[i];
-				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
-			}
-
 	}
 	#ifdef AA_ENABLED
 	for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {
@@ -390,20 +440,19 @@ int Application5::Render()
 	}
 	#endif
 
-
 	GzFlushDisplay2File(outfile, m_pDisplay); 	/* write out or update display to file*/
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
 
 	/* 
 	 * Close file
 	 */ 
-
 	if( fclose( infile ) )
       AfxMessageBox( "The input file was not closed\n" );
-
 	if( fclose( outfile ) )
       AfxMessageBox( "The output file was not closed\n" );
  
+
+	// THE END!!!
 	if (status) 
 		return(GZ_FAILURE); 
 	else 
