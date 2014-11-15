@@ -37,6 +37,7 @@ typedef struct GzRender {			/* define a renderer */
   GzMatrix		Ximage_im[MATLEVELS];	/* stack of xforms (Xsm) */
   GzMatrix		Xnorm[MATLEVELS];	/* xforms for norms (Xim) */
   GzMatrix		Xsp;		 /* NDC to screen (pers-to-screen) */
+  GzMatrix		Xwi;		/* image space to world */
   GzColor		flatcolor;  /* color for flat shaded triangles */
   int			interp_mode;
   int			numlights;
