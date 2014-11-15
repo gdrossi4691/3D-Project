@@ -85,6 +85,7 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	(*map)->camera.worldup[1] = 1;
 	(*map)->camera.worldup[2] = 0;
 	GzBeginRender(*map);
+	int t =0;
 	return GZ_SUCCESS;
 }
 
