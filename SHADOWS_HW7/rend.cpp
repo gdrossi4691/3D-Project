@@ -165,14 +165,14 @@ void GzInitCameraXiw(GzRender *render){
 	// Xwi
 	GzMatrix	wi = { 
 		x[0],	y[0],	z[0], render->camera.position[0],
-		x[1],	y[1],	z[1], render->camera.position[0],
-		x[2],	y[2],	z[2], render->camera.position[0],
+		x[1],	y[1],	z[1], render->camera.position[1],
+		x[2],	y[2],	z[2], render->camera.position[2],
 		0.0,	0.0,	0.0,	1.0 
 	}; 
 
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
-			render->Xwi[i][j] = iw[i][j];
+			render->Xwi[i][j] = wi[i][j];
 
 	return;
 }

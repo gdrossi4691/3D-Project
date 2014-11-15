@@ -8,6 +8,12 @@ float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light
 	float screenX, screenY, screenZ, screenW;
 	multiplyMatrixByVector(x, y, z,map->Ximage[map->matlevel],&screenX,&screenY,&screenZ,&screenW);
 
+	screenX = screenX / screenW;
+	screenY = screenY / screenW;
+	screenZ = screenZ / screenW;
+
+	if (screenW < 0)
+		return 1.0;
 	//Get the Z values for neighbouring pixels using display->fbuf and compare it with transformed pixel Z-values
 	float visibility;
 	GzDisplay* display = (GzDisplay*)map->display;

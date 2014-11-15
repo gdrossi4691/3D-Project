@@ -22,7 +22,7 @@ static char THIS_FILE[]=__FILE__;
 #define INFILE  "newmodel.asc"
 #define OUTFILE "output.ppm"
 
-#define IMAGE_SIZE  700
+#define IMAGE_SIZE  512
 
 #define AA_ENABLED
 #undef AA_ENABLED
@@ -185,7 +185,7 @@ GzMatrix Translate2=
 	status |= GzBeginRender(m_pRender);
 
 	/* Light */
-	GzLight	light1 = { {20.0 -0.7071, 0.7071, 0}, {0.5, 0.5, 0.9} };
+	GzLight	light1 = { {30.0, 20, 30}, {0.5, 0.5, 0.9} };
 	GzLight	light2 = { {-20.0 + 0, -0.7071, -0.7071}, {0.9, 0.2, 0.3} };
 	GzLight	light3 = { {0.7071, -100.0 + 0.0, -0.7071}, {0.2, 0.7, 0.3} };
 	GzLight	ambientlight = { {0, 0, 0}, {0.3, 0.3, 0.3} };
@@ -214,7 +214,7 @@ GzMatrix Translate2=
         valueListLights[1] = (GzPointer)&light2;
         nameListLights[2] = GZ_DIRECTIONAL_LIGHT;
         valueListLights[2] = (GzPointer)&light3;
-        status |= GzPutAttribute(m_pRender, 3, nameListLights, valueListLights);
+        status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
 
 		nameListLights[0] = GZ_AMBIENT_LIGHT;
         valueListLights[0] = (GzPointer)&ambientlight;
@@ -352,14 +352,18 @@ int Application5::Render()
 			valueListTriangle[0] = (GzPointer)vertexList; 
 			valueListTriangle[1] = (GzPointer)normalList; 
 			valueListTriangle[2] = (GzPointer)uvList; 
-			// shadow map rendeering
+			// shadow map rendering
 			for (int i = 0; i < m_pRender->numlights; i++) {
 				GzRender* map = m_pRender->lights_shadow_maps[i];
 				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
 			}
 
+
 	}
 	
+	GzFlushDisplay2File(outfile, (m_pRender->lights_shadow_maps[0])->display); 	/* write out or update display to file*/
+	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, (m_pRender->lights_shadow_maps[0])->display);	// write out or update display to frame buffer
+
 	/* 
 	 * Close file
 	 */ 
@@ -436,10 +440,10 @@ int Application5::Render()
 		}
 	}
 	#endif
-
-	GzFlushDisplay2File(outfile, m_pDisplay); 	/* write out or update display to file*/
+	
+	GzFlushDisplay2File(outfile, m_pDisplay); 	// write out or update display to file
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
-
+	
 	/* 
 	 * Close file
 	 */ 
