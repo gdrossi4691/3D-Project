@@ -149,34 +149,20 @@ GzMatrix Translate2=
 0,0,0,1
 };
 
-#if 1 	/* set up app-defined camera if desired, else use camera defaults */
-    /*camera.position[X] = -3;
-    camera.position[Y] = -25;
-    camera.position[Z] = -4;
+#if 1 	
+    camera.position[X] = 0.0;    
+  	camera.position[Y] = 10.0;
+  	camera.position[Z] = -15.0;
 
-    camera.lookat[X] = 7.8;
-    camera.lookat[Y] = 0.7;
-    camera.lookat[Z] = 6.5;
+  	camera.lookat[X] = 0.0;
+  	camera.lookat[Y] = 0.0;
+  	camera.lookat[Z] = 0.0;
 
-    camera.worldup[X] = -0.2;
-    camera.worldup[Y] = 1.0;
-    camera.worldup[Z] = 0.0;
-
-    camera.FOV = 63.7;              /* degrees *              /* degrees */
- 
-    camera.position[X] = 0.2;      
-  	camera.position[Y] = -0.7;
-  	camera.position[Z] = -50.8;
-
-  	camera.lookat[X] = 1.8;
-  	camera.lookat[Y] = 0.7;
-  	camera.lookat[Z] = 4.5;
-
-  	camera.worldup[X] = -0.2;
+  	camera.worldup[X] = 0.0;
   	camera.worldup[Y] = 1.0;
   	camera.worldup[Z] = 0.0;
 
-    camera.FOV = 53.7;    
+	camera.FOV = 50.0;  
 	status |= GzPutCamera(m_pRender, &camera); 
 	
 #endif 
@@ -185,16 +171,23 @@ GzMatrix Translate2=
 	status |= GzBeginRender(m_pRender);
 
 	/* Light */
-	GzLight	light1 = { {30.0, 20, 30}, {0.5, 0.5, 0.9} };
-	GzLight	light2 = { {-20.0 + 0, -0.7071, -0.7071}, {0.9, 0.2, 0.3} };
-	GzLight	light3 = { {0.7071, -100.0 + 0.0, -0.7071}, {0.2, 0.7, 0.3} };
-	GzLight	ambientlight = { {0, 0, 0}, {0.3, 0.3, 0.3} };
+	GzLight	light1 = { {12.0, 7.0, -12.0}, {30.0, 20, 30}, {0.5, 0.5, 0.9}, 5};
+	float w;
+	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
+		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
+	light1.position_im[0] /= w;
+	light1.position_im[1] /= w;
+	light1.position_im[2] /= w;
+
+	//GzLight	light2 = { {-20.0 + 0, -0.7071, -0.7071}, {0.9, 0.2, 0.3} };
+	//GzLight	light3 = { {0.7071, -100.0 + 0.0, -0.7071}, {0.2, 0.7, 0.3} };
+	GzLight	ambientlight = { {0, 0, 0}, {0, 0, 0}, {0.3, 0.3, 0.3}, 1};
 
 	GzBoundingBox	bbox = { -10.0, 10.0, -10.0, 10.0, -10.0, 10.0};
 
 	/* Material property */
 	GzColor specularCoefficient = { 0.3, 0.3, 0.3 };
-	GzColor ambientCoefficient = { 0.1, 0.1, 0.1 };
+	GzColor ambientCoefficient = { 0.2, 0.2, 0.2 };
 	GzColor diffuseCoefficient = {0.7, 0.7, 0.7};
 
 /* 
@@ -210,12 +203,12 @@ GzMatrix Translate2=
 
         nameListLights[0] = GZ_DIRECTIONAL_LIGHT;
         valueListLights[0] = (GzPointer)&light1;
-		nameListLights[1] = GZ_DIRECTIONAL_LIGHT;
-        valueListLights[1] = (GzPointer)&light2;
-        nameListLights[2] = GZ_DIRECTIONAL_LIGHT;
-        valueListLights[2] = (GzPointer)&light3;
+		//nameListLights[1] = GZ_DIRECTIONAL_LIGHT;
+        //valueListLights[1] = (GzPointer)&light2;
+        //nameListLights[2] = GZ_DIRECTIONAL_LIGHT;
+        //valueListLights[2] = (GzPointer)&light3;
         status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
-
+		
 		nameListLights[0] = GZ_AMBIENT_LIGHT;
         valueListLights[0] = (GzPointer)&ambientlight;
         status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
@@ -268,7 +261,9 @@ GzMatrix Translate2=
 #endif
         status |= GzPutAttribute(m_pRender, 6, nameListShader, valueListShader);
 
-		status |= GzPushMatrix(m_pRender, scale);  
+		// model space transformations:
+		/*
+		status |= GzPushMatrix(m_pRender, scale);
 		status |= GzPushMatrix(m_pRender, rotateY); 
 		status |= GzPushMatrix(m_pRender, rotateX); 
 		status|=GzPushMatrix(m_pRender,rotateX2);
@@ -277,6 +272,7 @@ GzMatrix Translate2=
 		status|=GzPushMatrix(m_pRender,rotateY2);
 		status|=GzPushMatrix(m_pRender,rotateY3);
 		status|=GzPushMatrix(m_pRender,Translate2);
+		*/
 		if (status) exit(GZ_FAILURE); 
 
 		if (status) 
@@ -357,8 +353,6 @@ int Application5::Render()
 				GzRender* map = m_pRender->lights_shadow_maps[i];
 				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
 			}
-
-
 	}
 	
 	GzFlushDisplay2File(outfile, (m_pRender->lights_shadow_maps[0])->display); 	/* write out or update display to file*/
@@ -443,7 +437,7 @@ int Application5::Render()
 	
 	GzFlushDisplay2File(outfile, m_pDisplay); 	// write out or update display to file
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
-	
+
 	/* 
 	 * Close file
 	 */ 

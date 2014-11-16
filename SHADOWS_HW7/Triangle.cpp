@@ -175,8 +175,8 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 	// implementing eye vector directed to the focal point
 	float d = 1.0 / tan((render->camera.FOV / 2.0) * (PI / 180.0));
 	// FIXME: don't know why "ex = -x_im / 2.0;" works beter then "ex = -x_im;" ???
-	float ex = -x_im / 2.0;		//0;
-	float ey = -y_im / 2.0;		//0;
+	float ex = -x_im;		//0;
+	float ey = -y_im;		//0;
 	float ez = -d -z_im;		//-1;
 	GzNormalize_vector(&ex, &ey, &ez);
 
@@ -194,36 +194,40 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 	(*color)[1] = amb_color[1] * render->ambientlight.color[1];
 	(*color)[2] = amb_color[2] * render->ambientlight.color[2];
 
-	// TODO: compute world coordinates of curent point
+	// compute world coordinates of curent point
 	float x = 0.0; 
 	float y = 0.0;
 	float z = 0.0;
 	float w = 0.0;
 	multiplyMatrixByVector(x_im, y_im, z_im, render->Xwi, &x, &y, &z, &w);
+	x /= w;
+	y /= w;
+	z /= w;
 	
 	for (int i = 0; i < render->numlights; i++) {
 		float visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 
-		float lx = render->lights[i].position[0] - x_im;
-		float ly = render->lights[i].position[1] - y_im;
-		float lz = render->lights[i].position[2] - z_im;
+		float lx = render->lights[i].position_im[0] - x_im;
+		float ly = render->lights[i].position_im[1] - y_im;
+		float lz = render->lights[i].position_im[2] - z_im;
 		GzNormalize_vector(&lx, &ly, &lz);
 
 		float N_L_dot_product = multipy_vectors(nx, ny, nz, lx, ly, lz);
 		float N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
-		if ((N_L_dot_product  < 0 && N_E_dot_product > 0) || (N_L_dot_product > 0 && N_E_dot_product < 0))
+		//FIXME: -0.1 !!!
+		if ((N_L_dot_product  < 0.0 && N_E_dot_product > -0.0) || (N_L_dot_product > 0.0 && N_E_dot_product < 0.0))
 			continue;
-		if (N_L_dot_product  < 0 && N_E_dot_product < 0){
-			nx *= -1;
-			ny *= -1;
-			nz *= -1;
+		if (N_L_dot_product  < 0.0 && N_E_dot_product < 0.0){
+			nx *= -1.0;
+			ny *= -1.0;
+			nz *= -1.0;
 			N_L_dot_product = multipy_vectors(nx, ny, nz, lx, ly, lz);
 			N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
 		}
 
-		float rx = 2 * nx * N_L_dot_product - lx;
-		float ry = 2 * ny * N_L_dot_product - ly;
-		float rz = 2 * nz * N_L_dot_product - lz;
+		float rx = 2.0 * nx * N_L_dot_product - lx;
+		float ry = 2.0 * ny * N_L_dot_product - ly;
+		float rz = 2.0 * nz * N_L_dot_product - lz;
 		GzNormalize_vector(&rx, &ry, &rz);
 
 		float R_E_dot_product = pow(multipy_vectors(rx, ry, rz, ex, ey, ez), render->spec);

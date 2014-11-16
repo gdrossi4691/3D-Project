@@ -2,10 +2,9 @@
 #include "rend.h"
 #include "math.h"
 
+#define SHADOW_MAP_SIZE 512
 // light position and box positions are in model space...
 int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
-
-
 	// get all the things in camera initialized
 	*map = new GzRender();
 	(*map)->numlights = 0;
@@ -17,7 +16,7 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	// temprorary stub:
 	(*map)->matlevel = 0;
 	(*map)->interp_mode = GZ_FLAT;
-	GzNewDisplay(&(*map)->display, 512, 512);
+	GzNewDisplay(&(*map)->display, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
@@ -74,7 +73,7 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	float FOV_in_radius = (diagono_distance_on_the_plane/distance_from_camera_to_center_cube);
 
 
-	(*map)->camera.FOV = 60; //FIXME
+	(*map)->camera.FOV = 90; //FIXME
 	(*map)->camera.position[0] = (*light).position[0];
 	(*map)->camera.position[1] = (*light).position[1];
 	(*map)->camera.position[2] = (*light).position[2];
@@ -97,7 +96,7 @@ int GzNewPerspectiveShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBo
 	(*map)->shift_x = 0.0;
 	(*map)->shift_y = 0.0;
 	// temprorary stub:
-	(*map)->matlevel = 1;
+	(*map)->matlevel = 0;
 	(*map)->interp_mode = GZ_FLAT;
 	GzNewDisplay(&(*map)->display, 512, 512);
 	// TODO:

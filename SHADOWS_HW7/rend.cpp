@@ -273,9 +273,9 @@ int GzBeginRender(GzRender *render)
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++){
 			render->Ximage[0][i][j] = (i != j) ? 0.0 : 1.0;
-			render->Ximage[50][i][j] = (i != j) ? 0.0 : 1.0;
-			render->Ximage[51][i][j] = (i != j) ? 0.0 : 1.0;
-			render->Ximage[52][i][j] = (i != j) ? 0.0 : 1.0;
+			render->Ximage_im[0][i][j] = (i != j) ? 0.0 : 1.0;
+			render->Ximage_im[1][i][j] = (i != j) ? 0.0 : 1.0;
+			render->Ximage_im[2][i][j] = (i != j) ? 0.0 : 1.0;
 			render->Xnorm[0][i][j] = (i != j) ? 0.0 : 1.0;
 			render->Xnorm[1][i][j] = (i != j) ? 0.0 : 1.0;
 			render->Xnorm[2][i][j] = (i != j) ? 0.0 : 1.0;
@@ -302,7 +302,7 @@ int GzPushMatrix(GzRender *render, GzMatrix	matrix)
 - push a matrix onto the Ximage stack
 - check for stack overflow
 */
-	if (render->matlevel == 49)
+	if (render->matlevel == 99)
 		return GZ_FAILURE;
 	render->matlevel++;
 	
@@ -334,17 +334,17 @@ int GzPushMatrix(GzRender *render, GzMatrix	matrix)
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			float sum = 0;
-			float sum_50 = 0;
+			float sum_im = 0;
 			float sum_norm = 0;
 			for (int k = 0; k < 4; k++) {
 				sum +=  render->Ximage[render->matlevel - 1][i][k] * matrix[k][j];
-				sum_50 +=  render->Ximage[render->matlevel + 50 - 1][i][k] * matrix[k][j];
+				sum_im +=  render->Ximage_im[render->matlevel - 1][i][k] * matrix[k][j];
 				sum_norm +=  render->Xnorm[render->matlevel - 1][i][k] * matrix_norm[k][j];
 			}
 			render->Ximage[render->matlevel][i][j] = sum; 	
 			if (render->matlevel > 2) {
 				render->Xnorm[render->matlevel][i][j] = sum_norm;
-				render->Ximage[render->matlevel + 50][i][j] = sum_50; 	
+				render->Ximage_im[render->matlevel][i][j] = sum_im; 	
 			}
 		}
 	}
@@ -549,9 +549,9 @@ int GzPutTriangle(GzRender	*render, int numParts, GzToken *nameList, GzPointer	*
 				)
 					continue;	
 
-			multiplyMatrixByVector(p1X, p1Y, p1Z, render->Ximage[render->matlevel + 50], &x1_im, &y1_im, &z1_im, &w1);
-			multiplyMatrixByVector(p2X, p2Y, p2Z, render->Ximage[render->matlevel + 50], &x2_im, &y2_im, &z2_im, &w2);
-			multiplyMatrixByVector(p3X, p3Y, p3Z, render->Ximage[render->matlevel + 50], &x3_im, &y3_im, &z3_im, &w3);
+			multiplyMatrixByVector(p1X, p1Y, p1Z, render->Ximage_im[render->matlevel], &x1_im, &y1_im, &z1_im, &w1);
+			multiplyMatrixByVector(p2X, p2Y, p2Z, render->Ximage_im[render->matlevel], &x2_im, &y2_im, &z2_im, &w2);
+			multiplyMatrixByVector(p3X, p3Y, p3Z, render->Ximage_im[render->matlevel], &x3_im, &y3_im, &z3_im, &w3);
 			
 			x1_im /= w1;
 			y1_im /= w1;

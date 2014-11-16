@@ -77,6 +77,7 @@ typedef struct  GzCamera
 typedef struct  GzLight
 {
    GzCoord    position; 	/* vector from surface to light */
+   GzCoord    position_im; 	/* vector from surface to light */
    GzColor    color;		/* light color intensity */
    float	size;
 } GzLight;
