@@ -5,7 +5,7 @@
 float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
 	//Transforming this pixel value to screen space
 	float screenX, screenY, screenZ, screenW;
-	multiplyMatrixByVector(x, y, z,map->Ximage[map->matlevel],&screenX,&screenY,&screenZ,&screenW);
+	multiplyMatrixByVector(x, y, z,map->Ximage_from_world[3],&screenX,&screenY,&screenZ,&screenW);
 	screenX /= screenW;
 	screenY /= screenW;
 	screenZ /= screenW;

@@ -284,6 +284,14 @@ int GzBeginRender(GzRender *render)
 	GzPushMatrix(render, render->camera.Xpi);
 	GzPushMatrix(render, render->camera.Xiw);
 
+	// init world to screen Xform:
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++){
+			render->Ximage_from_world[0][i][j] = render->Ximage[0][i][j];
+			render->Ximage_from_world[1][i][j] = render->Ximage[1][i][j];
+			render->Ximage_from_world[2][i][j] = render->Ximage[2][i][j];
+			render->Ximage_from_world[3][i][j] = render->Ximage[3][i][j];
+		}
 	return GZ_SUCCESS;
 }
 
@@ -349,6 +357,8 @@ int GzPushMatrix(GzRender *render, GzMatrix	matrix)
 		}
 	}
 	
+	for (int i = 0; i < render->numlights; i++)
+		GzPushMatrix(render->lights_shadow_maps[i], matrix);
 	return GZ_SUCCESS;
 }
 
@@ -361,6 +371,10 @@ int GzPopMatrix(GzRender *render)
 	if (render->matlevel == 0)
 		return GZ_FAILURE;
 	render->matlevel--;
+
+	
+	for (int i = 0; i < render->numlights; i++)
+		GzPopMatrix(render->lights_shadow_maps[i]);
 	return GZ_SUCCESS;
 } 
 

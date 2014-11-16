@@ -19,7 +19,7 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define INFILE  "newmodel.asc"
+#define INFILE  "newmodel_.asc"
 #define OUTFILE "output.ppm"
 
 #define IMAGE_SIZE  512
@@ -171,7 +171,7 @@ GzMatrix Translate2=
 	status |= GzBeginRender(m_pRender);
 
 	/* Light */
-	GzLight	light1 = { {12.0, 7.0, -12.0}, {30.0, 20, 30}, {0.5, 0.5, 0.9}, 5};
+	GzLight	light1 = { {10.0, 8.0, 10.0}, {30.0, 20, 30}, {0.5, 0.5, 0.9}, 5};
 	float w;
 	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
@@ -325,6 +325,10 @@ int Application5::Render()
 	* Walk through the list of triangles, set color 
 	* and render each triangle 
 	*/ 
+	for (int i = 0; i < m_pRender->numlights; i++) {
+				GzRender* map = m_pRender->lights_shadow_maps[i];
+				GzInitDisplay(map->display);
+	}
 	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
 			fscanf(infile, "%f %f %f %f %f %f %f %f", 
 			&(vertexList[0][0]), &(vertexList[0][1]),  

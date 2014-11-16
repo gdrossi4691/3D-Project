@@ -34,6 +34,7 @@ typedef struct GzRender {			/* define a renderer */
   GzCamera		camera;
   short		matlevel;  /* top of stack -> current xform */
   GzMatrix		Ximage[MATLEVELS];	/* stack of xforms (Xsm) */
+  GzMatrix		Ximage_from_world[MATLEVELS]; // from world space to screen space
   GzMatrix		Ximage_im[MATLEVELS];	/* stack of xforms (Xsm) */
   GzMatrix		Xnorm[MATLEVELS];	/* xforms for norms (Xim) */
   GzMatrix		Xsp;		 /* NDC to screen (pers-to-screen) */
