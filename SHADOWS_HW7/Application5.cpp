@@ -27,6 +27,8 @@ static char THIS_FILE[]=__FILE__;
 #define AA_ENABLED
 #undef AA_ENABLED
 
+#define NUMBER_OF_LIGHTS 3 // no more then 3!
+
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,
 		-0.17, -0.29, 0.249,                    0.58, -0.55, 0.104,                   -0.31, -0.71, 0.106    };
@@ -170,17 +172,29 @@ GzMatrix Translate2=
 	/* Start Renderer */
 	status |= GzBeginRender(m_pRender);
 
-	/* Light */
-	GzLight	light1 = { {10.0, 8.0, 10.0}, {30.0, 20, 30}, {0.5, 0.5, 0.9}, 5};
 	float w;
+	/* Light */
+	GzLight	light1 = { {10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.5, 0.5, 0.9}, 5};
 	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
 	light1.position_im[0] /= w;
 	light1.position_im[1] /= w;
 	light1.position_im[2] /= w;
 
-	//GzLight	light2 = { {-20.0 + 0, -0.7071, -0.7071}, {0.9, 0.2, 0.3} };
-	//GzLight	light3 = { {0.7071, -100.0 + 0.0, -0.7071}, {0.2, 0.7, 0.3} };
+	GzLight	light2 = { {-10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.9, 0.2, 0.3}, 5};
+	multiplyMatrixByVector(light2.position[0], light2.position[1], light2.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
+		&(light2.position_im[0]), &(light2.position_im[1]), &(light2.position_im[2]), &w);
+	light2.position_im[0] /= w;
+	light2.position_im[1] /= w;
+	light2.position_im[2] /= w;
+	
+	GzLight	light3 = { {0.0, 8.0, 15.0}, {0.0, 0.0, 0.0}, {0.2, 0.7, 0.3}, 5};
+	multiplyMatrixByVector(light3.position[0], light3.position[1], light3.position[2], m_pRender->Ximage_im[m_pRender->matlevel],
+		&(light3.position_im[0]), &(light3.position_im[1]), &(light3.position_im[2]), &w);
+	light3.position_im[0] /= w;
+	light3.position_im[1] /= w;
+	light3.position_im[2] /= w;
+	
 	GzLight	ambientlight = { {0, 0, 0}, {0, 0, 0}, {0.3, 0.3, 0.3}, 1};
 
 	GzBoundingBox	bbox = { -10.0, 10.0, -10.0, 10.0, -10.0, 10.0};
@@ -203,11 +217,11 @@ GzMatrix Translate2=
 
         nameListLights[0] = GZ_DIRECTIONAL_LIGHT;
         valueListLights[0] = (GzPointer)&light1;
-		//nameListLights[1] = GZ_DIRECTIONAL_LIGHT;
-        //valueListLights[1] = (GzPointer)&light2;
-        //nameListLights[2] = GZ_DIRECTIONAL_LIGHT;
-        //valueListLights[2] = (GzPointer)&light3;
-        status |= GzPutAttribute(m_pRender, 1, nameListLights, valueListLights);
+		nameListLights[1] = GZ_DIRECTIONAL_LIGHT;
+        valueListLights[1] = (GzPointer)&light2;
+        nameListLights[2] = GZ_DIRECTIONAL_LIGHT;
+        valueListLights[2] = (GzPointer)&light3;
+        status |= GzPutAttribute(m_pRender, NUMBER_OF_LIGHTS, nameListLights, valueListLights);
 		
 		nameListLights[0] = GZ_AMBIENT_LIGHT;
         valueListLights[0] = (GzPointer)&ambientlight;
