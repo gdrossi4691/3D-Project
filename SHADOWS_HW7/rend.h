@@ -16,6 +16,12 @@
 
 #define PI 3.141592653589793
 
+#define HARD_SHADOW_ALGORITHM 0
+#define PCF_SHADOW_ALGORITHM  1
+#define PCFS_SHADOW_ALGORITHM 2
+
+#define SHADOW_ALGORITHM PCF_SHADOW_ALGORITHM
+
 
 #pragma once
 typedef struct {
@@ -97,6 +103,8 @@ int GzNewPerspectiveShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBo
 // free memory
 int GzDeleteShadowMapCamera(GzRender* map);
 
+// Hard shadows. x,y,z are coordinates of the point in world.
+float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
 // Percentage Closer Filter. Filter has a fixed-size kernel. x,y,z are coordinates of the point in world.
 float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
 // Percentage Closer Filter with with dynamic kernel size. Penumbra size depends on light area size. x,y,z are coordinates of the point in world.

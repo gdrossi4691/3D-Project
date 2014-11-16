@@ -1,6 +1,33 @@
 #include "stdafx.h"
 #include "rend.h"
 #define	ARRAY(x,y)	(x+(y*display->xres))
+#define	Z_DIFFERENCE_THRESHOLD 2000000
+
+float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
+	//Transforming this pixel value to screen space
+	float screenX, screenY, screenZ, screenW;
+	multiplyMatrixByVector(x, y, z,map->Ximage_from_world[3],&screenX,&screenY,&screenZ,&screenW);
+	if (screenW < 0)
+		return 1.0;
+	screenX /= screenW;
+	screenY /= screenW;
+	screenZ /= screenW;
+
+	GzDisplay* display = (GzDisplay*)map->display;
+	int fbX = (int)(screenX + 0.5);
+	int fbY = (int)(screenY + 0.5);
+	int fbZ = (int)(screenZ + 0.5);
+
+	//Checking for screen space bounds
+	if(fbX >= 0 && fbX < display->xres && fbY >= 0 && fbY < display->yres){
+		int diff = fbZ - display->fbuf[ARRAY(fbX,fbY)].z;
+		if(diff <= Z_DIFFERENCE_THRESHOLD)
+			return 1.0;
+		else
+			return 0.0;
+	}
+	return 1.0;
+}
 
 float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
 	//Transforming this pixel value to screen space
@@ -22,7 +49,7 @@ float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light
 	if(fbX >= 0 && fbX < display->xres && fbY >= 0 && fbY < display->yres){
 		GzDepth neighbourZ = display->fbuf[ARRAY(fbX,fbY)].z;
 		float diff = screenZ - (float)neighbourZ;
-		if(diff <= 1000000){
+		if(diff <= Z_DIFFERENCE_THRESHOLD){
 			return 1.0;
 		}
 		else{

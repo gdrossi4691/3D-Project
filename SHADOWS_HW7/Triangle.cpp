@@ -205,7 +205,13 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 	z /= w;
 	
 	for (int i = 0; i < render->numlights; i++) {
-		float visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
+		float visibility;
+		if (SHADOW_ALGORITHM == HARD_SHADOW_ALGORITHM)
+			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
+		if (SHADOW_ALGORITHM == PCF_SHADOW_ALGORITHM)
+			visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
+		if (SHADOW_ALGORITHM == PCFS_SHADOW_ALGORITHM)
+			visibility = GzPCFSoftShadowVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 
 		float lx = render->lights[i].position_im[0] - x_im;
 		float ly = render->lights[i].position_im[1] - y_im;
