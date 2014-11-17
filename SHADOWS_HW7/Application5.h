@@ -24,6 +24,7 @@ public:
 	virtual ~Application5();
 	
 	int	Initialize();
+	int LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextureIndex* uvLists);
 	virtual int Render(); 
 	int Clean();
 };

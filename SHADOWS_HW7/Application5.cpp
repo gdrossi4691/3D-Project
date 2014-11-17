@@ -23,9 +23,10 @@ static char THIS_FILE[]=__FILE__;
 #define OUTFILE "output.ppm"
 
 #define IMAGE_SIZE  512
+#define MAX_NUMBER_OF_TRIANGLES 30000
 
 #define AA_ENABLED
-#undef AA_ENABLED
+//#undef AA_ENABLED
 
 #define NUMBER_OF_LIGHTS 3 // no more then 3!
 
@@ -295,6 +296,64 @@ GzMatrix Translate2=
 			return(GZ_SUCCESS); 
 }
 
+
+int Application5::LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextureIndex* uvLists){
+	GzCoord		vertexList[3];	/* vertex position coordinates */ 
+	GzCoord		normalList[3];	/* vertex normals */ 
+	GzTextureIndex  	uvList[3];		/* vertex texture map indices */ 
+	char		dummy[256]; 
+
+	
+	// I/O File open
+	FILE *infile;
+	if( (infile  = fopen( INFILE , "r" )) == NULL )	{
+         AfxMessageBox( "The input file was not opened\n" );
+		 return GZ_FAILURE;
+	}
+	/* 
+	* Walk through the list of triangles, set color 
+	* and render each triangle 
+	*/ 
+	int number_of_triangles = 0;
+	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[0][0]), &(vertexList[0][1]),  
+			&(vertexList[0][2]), 
+			&(normalList[0][0]), &(normalList[0][1]), 	
+			&(normalList[0][2]), 
+			&(uvList[0][0]), &(uvList[0][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[1][0]), &(vertexList[1][1]), 	
+			&(vertexList[1][2]), 
+			&(normalList[1][0]), &(normalList[1][1]), 	
+			&(normalList[1][2]), 
+			&(uvList[1][0]), &(uvList[1][1]) ); 
+			fscanf(infile, "%f %f %f %f %f %f %f %f", 
+			&(vertexList[2][0]), &(vertexList[2][1]), 	
+			&(vertexList[2][2]), 
+			&(normalList[2][0]), &(normalList[2][1]), 	
+			&(normalList[2][2]), 
+			&(uvList[2][0]), &(uvList[2][1]) ); 
+			
+			//FIXME: deep copy
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					vertexLists[number_of_triangles + i][j] = vertexList[i][j];
+					normalLists[number_of_triangles + i][j] = normalList[i][j]; 
+				}	
+				uvLists[number_of_triangles + i][0] = uvLists[i][0];
+				uvLists[number_of_triangles + i][1] = uvLists[i][1];
+			}
+			number_of_triangles = number_of_triangles + 3;
+	}	
+	/* 
+	 * Close file
+	 */ 
+	if( fclose( infile ) )
+      AfxMessageBox( "The input file was not closed\n" );
+	return number_of_triangles;
+}
+
 int Application5::Render() 
 {
 	GzToken		nameListTriangle[3]; 	/* vertex attribute names */
@@ -302,17 +361,22 @@ int Application5::Render()
 	GzCoord		vertexList[3];	/* vertex position coordinates */ 
 	GzCoord		normalList[3];	/* vertex normals */ 
 	GzTextureIndex  	uvList[3];		/* vertex texture map indices */ 
-	char		dummy[256]; 
+
+	GzCoord			vertexLists[MAX_NUMBER_OF_TRIANGLES];	/* vertex position coordinates */ 
+	GzCoord			normalLists[MAX_NUMBER_OF_TRIANGLES];	/* vertex normals */ 
+	GzTextureIndex  uvLists[MAX_NUMBER_OF_TRIANGLES];		/* vertex texture map indices */ 
+
 	int			status; 
 
 
 	/* Initialize Display */
 	status |= GzInitDisplay(m_pDisplay); 
-	for (int i = 0; i < AAKERNEL_SIZE; i++) {
+	for (int i = 0; i < AAKERNEL_SIZE; i++)
 		status |= GzInitDisplay(m_pDisplays[i]); 
-	}			
-	
-	
+	for (int i = 0; i < m_pRender->numlights; i++) {
+		GzRender* map = m_pRender->lights_shadow_maps[i];
+		status |= GzInitDisplay(map->display);
+	}
 	/* 
 	* Tokens associated with triangle vertex values 
 	*/ 
@@ -321,123 +385,33 @@ int Application5::Render()
 	nameListTriangle[2] = GZ_TEXTURE_INDEX;  
 
 
-	// STEP I
-
-	// I/O File open
-	FILE *infile;
-	if( (infile  = fopen( INFILE , "r" )) == NULL )	{
-         AfxMessageBox( "The input file was not opened\n" );
-		 return GZ_FAILURE;
+	// PASS I
+	int number_of_triangles = LoadModel(vertexLists, normalLists, uvLists);
+	for (int k = 0; k < number_of_triangles; k = k + 3) {
+		valueListTriangle[0] = (GzPointer)vertexLists[k]; 
+		valueListTriangle[1] = (GzPointer)normalLists[k]; 
+		valueListTriangle[2] = (GzPointer)uvLists[k]; 
+		// shadow map rendering
+		for (int i = 0; i < m_pRender->numlights; i++) {
+			GzRender* map = m_pRender->lights_shadow_maps[i];
+			GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
+		}
 	}
-	FILE *outfile;
-	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
-         AfxMessageBox( "The output file was not opened\n" );
-		 return GZ_FAILURE;
-	}
-
-	/* 
-	* Walk through the list of triangles, set color 
-	* and render each triangle 
-	*/ 
-	for (int i = 0; i < m_pRender->numlights; i++) {
-				GzRender* map = m_pRender->lights_shadow_maps[i];
-				GzInitDisplay(map->display);
-	}
-	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[0][0]), &(vertexList[0][1]),  
-			&(vertexList[0][2]), 
-			&(normalList[0][0]), &(normalList[0][1]), 	
-			&(normalList[0][2]), 
-			&(uvList[0][0]), &(uvList[0][1]) ); 
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[1][0]), &(vertexList[1][1]), 	
-			&(vertexList[1][2]), 
-			&(normalList[1][0]), &(normalList[1][1]), 	
-			&(normalList[1][2]), 
-			&(uvList[1][0]), &(uvList[1][1]) ); 
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[2][0]), &(vertexList[2][1]), 	
-			&(vertexList[2][2]), 
-			&(normalList[2][0]), &(normalList[2][1]), 	
-			&(normalList[2][2]), 
-			&(uvList[2][0]), &(uvList[2][1]) ); 
-
-			valueListTriangle[0] = (GzPointer)vertexList; 
-			valueListTriangle[1] = (GzPointer)normalList; 
-			valueListTriangle[2] = (GzPointer)uvList; 
-			// shadow map rendering
-			for (int i = 0; i < m_pRender->numlights; i++) {
-				GzRender* map = m_pRender->lights_shadow_maps[i];
-				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
-			}
-	}
-	
-	GzFlushDisplay2File(outfile, (m_pRender->lights_shadow_maps[0])->display); 	/* write out or update display to file*/
-	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, (m_pRender->lights_shadow_maps[0])->display);	// write out or update display to frame buffer
-
-	/* 
-	 * Close file
-	 */ 
-	if( fclose( infile ) )
-      AfxMessageBox( "The input file was not closed\n" );
-	if( fclose( outfile ) )
-      AfxMessageBox( "The output file was not closed\n" );
- 
-
-	// STEP II
-	
-	// I/O File open
-	if( (infile  = fopen( INFILE , "r" )) == NULL ) {
-         AfxMessageBox( "The input file was not opened\n" );
-		 return GZ_FAILURE;
-	} 
-	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
-         AfxMessageBox( "The output file was not opened\n" );
-		 return GZ_FAILURE;
-	}
-
-	/* 
-	* Walk through the list of triangles, set color 
-	* and render each triangle 
-	*/ 
-	while( fscanf(infile, "%s", dummy) == 1) { 	/* read in tri word */
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[0][0]), &(vertexList[0][1]),  
-			&(vertexList[0][2]), 
-			&(normalList[0][0]), &(normalList[0][1]), 	
-			&(normalList[0][2]), 
-			&(uvList[0][0]), &(uvList[0][1]) ); 
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[1][0]), &(vertexList[1][1]), 	
-			&(vertexList[1][2]), 
-			&(normalList[1][0]), &(normalList[1][1]), 	
-			&(normalList[1][2]), 
-			&(uvList[1][0]), &(uvList[1][1]) ); 
-			fscanf(infile, "%f %f %f %f %f %f %f %f", 
-			&(vertexList[2][0]), &(vertexList[2][1]), 	
-			&(vertexList[2][2]), 
-			&(normalList[2][0]), &(normalList[2][1]), 	
-			&(normalList[2][2]), 
-			&(uvList[2][0]), &(uvList[2][1]) ); 
-
-			/* 
-			* Set the value pointers to the first vertex of the 	
-			* triangle, then feed it to the renderer 
-			* NOTE: this sequence matches the nameList token sequence
-			*/ 
-			valueListTriangle[0] = (GzPointer)vertexList; 
-			valueListTriangle[1] = (GzPointer)normalList; 
-			valueListTriangle[2] = (GzPointer)uvList; 
-			status |= GzUpdateRender(m_pRender, m_pDisplay);
+	// PASS II
+	for (int k = 0; k < number_of_triangles; k = k + 3) {
+		status |= GzUpdateRender(m_pRender, m_pDisplay);
+		valueListTriangle[0] = (GzPointer)vertexLists[k]; 
+		valueListTriangle[1] = (GzPointer)normalLists[k]; 
+		valueListTriangle[2] = (GzPointer)uvLists[k]; 
+		GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
+		#ifdef AA_ENABLED
+		for (int i = 0; i < AAKERNEL_SIZE; i++) {
+			status |= GzUpdateRender(m_pRender, m_pDisplays[i]);
 			GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
-			#ifdef AA_ENABLED
-			for (int i = 0; i < AAKERNEL_SIZE; i++) {
-				status |= GzUpdateRender(m_pRender, m_pDisplays[i]);
-				GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
-			}
-			#endif
+		}
+		#endif
 	}
+
 	#ifdef AA_ENABLED
 	for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {
 		m_pDisplay->fbuf[l].red   = 0.0;
@@ -453,17 +427,18 @@ int Application5::Render()
 	}
 	#endif
 	
+	FILE *outfile;
+	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
+         AfxMessageBox( "The output file was not opened\n" );
+		 return GZ_FAILURE;
+	}
+	
 	GzFlushDisplay2File(outfile, m_pDisplay); 	// write out or update display to file
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
-
-	/* 
-	 * Close file
-	 */ 
-	if( fclose( infile ) )
-      AfxMessageBox( "The input file was not closed\n" );
+	
 	if( fclose( outfile ) )
-      AfxMessageBox( "The output file was not closed\n" );
- 
+	    AfxMessageBox( "The output file was not closed\n" );
+
 
 	// THE END!!!
 	if (status) 
