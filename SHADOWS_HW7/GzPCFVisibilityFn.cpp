@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "rend.h"
 #define	ARRAY(x,y)	(x+(y*display->xres))
-#define	Z_DIFFERENCE_THRESHOLD  2000000
+#define	Z_DIFFERENCE_THRESHOLD  10000000
 
 float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
 	//Transforming this pixel value to screen space
@@ -49,7 +49,7 @@ float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light
 	//Checking for screen space bounds
 	for(int i = fbX-2;i <= fbX+2; i++){
 		for(int j = fbY-2; j <= fbY+2; j++){
-			if((i<0 ||i>display->xres) ||(j<0 || j>display->yres)){
+			if((i<0 ||i>=display->xres) ||(j<0 || j>=display->yres)){
 				return 1.0;
 			}
 				if(fbX >= 0 && fbX < display->xres && fbY >= 0 && fbY < display->yres){

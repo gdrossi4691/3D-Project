@@ -5,7 +5,7 @@
 /*
  * application test code for homework assignment #5
 */
-
+#include <vector>
 #include "stdafx.h"
 #include "CS580HW.h"
 #include "Application5.h"
@@ -20,15 +20,19 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 #define INFILE  "newmodel_.asc"
+//#define INFILE  "board.obj"
 #define OUTFILE "output.ppm"
 
 #define IMAGE_SIZE  512
-#define MAX_NUMBER_OF_TRIANGLES 30000
+#define MAX_NUMBER_OF_TRIANGLES 150000
 
 #define AA_ENABLED
 //#undef AA_ENABLED
 
-#define NUMBER_OF_LIGHTS 3 // no more then 3!
+
+//#define OBJ_ENABLED
+
+#define NUMBER_OF_LIGHTS 2 // no more then 3!
 
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,
@@ -296,6 +300,80 @@ GzMatrix Translate2=
 			return(GZ_SUCCESS); 
 }
 
+int Application5::LoadObjModel(Model** pModel){
+	char strLine[255]		= {0};
+	char ch					= 0;
+	char c=0;
+	int i=0,j=0,k=0;
+	GzCoord* NewVertex = new GzCoord[MAX_NUMBER_OF_TRIANGLES];
+	GzCoord* NewNormal = new GzCoord[MAX_NUMBER_OF_TRIANGLES];
+	GzTextureIndex* Newtext = new GzTextureIndex[MAX_NUMBER_OF_TRIANGLES];
+	int number_of_triangles=0;
+	int v[3];
+	int t[3];
+	int vn[3];
+	GzCoord Vect1,Vect2;
+	GzCoord Final;
+	int vnpresent=0;
+
+	FILE *output;
+	output= fopen(INFILE, "r");
+	if(!output) {	
+		return -1;
+	}
+
+	int obj_count = -1;
+   	while(!feof(output)){
+		float x = 0.0f, y = 0.0f, z = 0.0f;
+		ch = fgetc(output);
+		pModel[number_of_triangles] = new Model();
+		switch(ch) {
+		case 'o':fgets(strLine, 100, output);
+				obj_count++;
+				break;
+		case 'v':c = fgetc(output);
+                 if(c==' ') {
+                    fscanf(output, "%f %f %f", &NewVertex[i][0], &NewVertex[i][1], &NewVertex[i][2]);
+					i++;
+				 } else if(c=='t'){
+					fscanf(output, "%f %f", &Newtext[j][0], &Newtext[j][1]);
+					j++;
+				 } else if(c=='n'){
+					fscanf(output, "%f %f %f", &NewNormal[k][0], &NewNormal[k][1],&NewNormal[k][2]);
+					k++;
+				 }
+				 c = fgetc(output);
+				 break;
+		case 'f':c = fgetc(output);
+			    if(c==' ') {
+					fscanf(output, "%d/%d/%d %d/%d/%d %d/%d/%d",&v[0],&t[0],&vn[0]
+														,&v[1],&t[1],&vn[1]
+														,&v[2],&t[2],&vn[2]);
+					for(int m=0;m<3;m++) {
+						(pModel[number_of_triangles])->side[m][0]=NewVertex[v[m]-1][0]/1.0;
+						(pModel[number_of_triangles])->side[m][1]=NewVertex[v[m]-1][1]/1.0;
+						(pModel[number_of_triangles])->side[m][2]=NewVertex[v[m]-1][2]/1.0;
+						(pModel[number_of_triangles])->normal[m][0]=NewNormal[vn[m]-1][0];
+						(pModel[number_of_triangles])->normal[m][1]=NewNormal[vn[m]-1][1];
+						(pModel[number_of_triangles])->normal[m][2]=NewNormal[vn[m]-1][2];
+						(pModel[number_of_triangles])->text[m][0]=Newtext[t[m]-1][0];
+						(pModel[number_of_triangles])->text[m][1]=Newtext[t[m]-1][1];
+					}													  
+					number_of_triangles++;
+				}
+				c = fgetc(output);
+				break;
+		default:fgets(strLine, 100, output);
+		}
+	}
+	fclose(output);
+
+	delete NewNormal;
+	delete NewVertex;
+	delete Newtext;
+	return number_of_triangles;
+}
+
 
 int Application5::LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextureIndex* uvLists){
 	GzCoord		vertexList[3];	/* vertex position coordinates */ 
@@ -303,7 +381,6 @@ int Application5::LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextur
 	GzTextureIndex  	uvList[3];		/* vertex texture map indices */ 
 	char		dummy[256]; 
 
-	
 	// I/O File open
 	FILE *infile;
 	if( (infile  = fopen( INFILE , "r" )) == NULL )	{
@@ -351,7 +428,7 @@ int Application5::LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextur
 	 */ 
 	if( fclose( infile ) )
       AfxMessageBox( "The input file was not closed\n" );
-	return number_of_triangles;
+	return (number_of_triangles / 3);
 }
 
 int Application5::Render() 
@@ -362,10 +439,11 @@ int Application5::Render()
 	GzCoord		normalList[3];	/* vertex normals */ 
 	GzTextureIndex  	uvList[3];		/* vertex texture map indices */ 
 
-	GzCoord			vertexLists[MAX_NUMBER_OF_TRIANGLES];	/* vertex position coordinates */ 
-	GzCoord			normalLists[MAX_NUMBER_OF_TRIANGLES];	/* vertex normals */ 
-	GzTextureIndex  uvLists[MAX_NUMBER_OF_TRIANGLES];		/* vertex texture map indices */ 
-
+	#ifndef OBJ_ENABLED
+	GzCoord			vertexLists[MAX_NUMBER_OF_TRIANGLES / 10];	/* vertex position coordinates */ 
+	GzCoord			normalLists[MAX_NUMBER_OF_TRIANGLES / 10];	/* vertex normals */ 
+	GzTextureIndex  uvLists[MAX_NUMBER_OF_TRIANGLES / 10];		/* vertex texture map indices */ 
+	#endif
 	int			status; 
 
 
@@ -386,11 +464,30 @@ int Application5::Render()
 
 
 	// PASS I
+	#ifdef OBJ_ENABLED
+	Model* triangles[MAX_NUMBER_OF_TRIANGLES];
+	int number_of_triangles = LoadObjModel(triangles);
+	#endif
+	#ifndef OBJ_ENABLED
 	int number_of_triangles = LoadModel(vertexLists, normalLists, uvLists);
+	#endif
+	
+	#ifdef OBJ_ENABLED
+	for (int k = 0; k < number_of_triangles; k++) {
+	#endif
+	#ifndef OBJ_ENABLED
 	for (int k = 0; k < number_of_triangles; k = k + 3) {
+	#endif
+		#ifdef OBJ_ENABLED
+		valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
+		valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
+		valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
+		#endif
+		#ifndef OBJ_ENABLED
 		valueListTriangle[0] = (GzPointer)vertexLists[k]; 
 		valueListTriangle[1] = (GzPointer)normalLists[k]; 
 		valueListTriangle[2] = (GzPointer)uvLists[k]; 
+		#endif
 		// shadow map rendering
 		for (int i = 0; i < m_pRender->numlights; i++) {
 			GzRender* map = m_pRender->lights_shadow_maps[i];
@@ -398,11 +495,18 @@ int Application5::Render()
 		}
 	}
 	// PASS II
-	for (int k = 0; k < number_of_triangles; k = k + 3) {
+	for (int k = 0; k < number_of_triangles; k++) {
+		#ifdef OBJ_ENABLED
+		valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
+		valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
+		valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
+		#endif
+		#ifndef OBJ_ENABLED
+		valueListTriangle[0] = (GzPointer)vertexLists[3 * k]; 
+		valueListTriangle[1] = (GzPointer)normalLists[3 * k]; 
+		valueListTriangle[2] = (GzPointer)uvLists[3 * k]; 
+		#endif
 		status |= GzUpdateRender(m_pRender, m_pDisplay);
-		valueListTriangle[0] = (GzPointer)vertexLists[k]; 
-		valueListTriangle[1] = (GzPointer)normalLists[k]; 
-		valueListTriangle[2] = (GzPointer)uvLists[k]; 
 		GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
 		#ifdef AA_ENABLED
 		for (int i = 0; i < AAKERNEL_SIZE; i++) {
@@ -411,6 +515,11 @@ int Application5::Render()
 		}
 		#endif
 	}
+
+	#ifdef OBJ_ENABLED
+	for (int i = 0; i < number_of_triangles; i++)
+		delete triangles[i];
+	#endif
 
 	#ifdef AA_ENABLED
 	for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {

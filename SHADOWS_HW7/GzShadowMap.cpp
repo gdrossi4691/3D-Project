@@ -15,7 +15,7 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 
 	// temprorary stub:
 	(*map)->matlevel = 0;
-	(*map)->interp_mode = GZ_FLAT;
+	(*map)->interp_mode = GZ_NONE;
 	GzNewDisplay(&(*map)->display, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
 	for (int i = 0; i < 4; i++)

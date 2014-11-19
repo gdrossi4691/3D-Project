@@ -43,6 +43,7 @@
 #define GZ_FLAT		0	/* flat shading with GZ_RBG_COLOR */
 #define	GZ_COLOR	  1	/* interpolate vertex color */
 #define	GZ_NORMALS	  2	/* interpolate normals */
+#define	GZ_NONE	  3	/* no interpollation */
 
 typedef int     GzToken;
 typedef void    *GzPointer;
@@ -104,3 +105,11 @@ typedef struct  GzInput
 
 #define U       0        /* array indicies for texture coords */
 #define V       1
+
+#pragma once 
+class Model {
+public:
+    GzCoord side[3];
+    GzCoord normal[3];
+    GzTextureIndex text[3];
+};

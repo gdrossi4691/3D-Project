@@ -630,6 +630,7 @@ int GzPutTriangle(GzRender	*render, int numParts, GzToken *nameList, GzPointer	*
 			tr.rasterize(render);	
 			is_normal_set = false;
 			is_position_set = false;
+			is_texture_set = false;
 		}
 	}
 	return GZ_SUCCESS;

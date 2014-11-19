@@ -366,6 +366,11 @@ void Triangle::rasterize(GzRender *render) {
 				float y_im = (1.0 - 2.0 * (i - render->display->y_shift) / render->display->yres) * (((float)z) / (INT_MAX - (float)z) + 1.0);
 
 				GzIntensity r,g,b;
+				if (render->interp_mode == GZ_NONE) {
+					r = ctoi(render->flatcolor[0]);
+					g = ctoi(render->flatcolor[1]);
+					b = ctoi(render->flatcolor[2]);
+				}
 				if (render->interp_mode == GZ_FLAT) {
 					GzColor cl;
 					compute_color(x_im, y_im, z_im, &cl, render, true);

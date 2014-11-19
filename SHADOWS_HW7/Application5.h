@@ -25,6 +25,7 @@ public:
 	
 	int	Initialize();
 	int LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextureIndex* uvLists);
+	int LoadObjModel(Model** triangles);
 	virtual int Render(); 
 	int Clean();
 };
