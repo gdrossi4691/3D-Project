@@ -1,7 +1,15 @@
 #include "stdafx.h"
 #include "rend.h"
 #define	ARRAY(x,y)	(x+(y*display->xres))
-#define	Z_DIFFERENCE_THRESHOLD  10000000
+#define	Z_DIFFERENCE_THRESHOLD  100000
+
+int is_in_display_range(GzDisplay* display, int valueX, int valueY) {
+	if(valueX >= 0 && valueX < display->xres && valueY >= 0 && valueY < display->yres)
+		return 1;
+	else 
+		return 0;
+}
+
 
 float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
 	//Transforming this pixel value to screen space
@@ -14,18 +22,45 @@ float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* li
 	screenZ /= screenW;
 
 	GzDisplay* display = (GzDisplay*)map->display;
-	int fbX = (int)(screenX + 0.5);
-	int fbY = (int)(screenY + 0.5);
-	int fbZ = (int)(screenZ + 0.5);
 
+	// bilinear interpolation:
+	int A_x, A_y, B_x, B_y, C_x, C_y, D_x, D_y;
+	A_x = (int)screenX;
+	A_y = (int)screenY;
+	C_x = (int)screenX + 1;
+	C_y = (int)screenY + 1;
+	B_x = (int)screenX + 1;
+	B_y = (int)screenY;
+	D_x = (int)screenX;
+	D_y = (int)screenY + 1;
+	
+	// Color(p) = s t C + (1-s) t D + s (1-t) B + (1-s) (1-t) A 
+	float s = screenX - A_x;
+	float t = screenY - A_y;
+	
 	//Checking for screen space bounds
-	if(fbX >= 0 && fbX < display->xres && fbY >= 0 && fbY < display->yres){
-		int diff = fbZ - display->fbuf[ARRAY(fbX,fbY)].z;
+	if(is_in_display_range(display, A_x, A_y) && is_in_display_range(display, B_x, B_y) && is_in_display_range(display, C_x, C_y) && is_in_display_range(display, D_x, D_y)){
+		int interpolated_z_from_map	= s * t * display->fbuf[ARRAY(C_x, C_y)].z + (1 - s) * t * display->fbuf[ARRAY(D_x, D_y)].z +
+			s * (1 - t) *  display->fbuf[ARRAY(B_x, B_y)].z + (1 - s) * (1 - t) *  display->fbuf[ARRAY(A_x, A_y)].z;
+		int screen_z = (int)(screenZ + 0.5);
+		int diff = screen_z - interpolated_z_from_map;
 		if(diff <= Z_DIFFERENCE_THRESHOLD)
 			return 1.0;
 		else
 			return 0.0;
 	}
+	int scr_x = (int)(screenX + 0.5); 
+	int scr_y = (int)(screenY + 0.5);
+	if(is_in_display_range(display, scr_x, scr_y)){
+		int interpolated_z_from_map	= display->fbuf[ARRAY(scr_x, scr_y)].z;
+		int screen_z = (int)(screenZ + 0.5);
+		int diff = screen_z - interpolated_z_from_map;
+		if(diff <= Z_DIFFERENCE_THRESHOLD)
+			return 1.0;
+		else
+			return 0.0;
+	} 
+
 	return 1.0;
 }
 

@@ -32,7 +32,7 @@ static char THIS_FILE[]=__FILE__;
 
 //#define OBJ_ENABLED
 
-#define NUMBER_OF_LIGHTS 2 // no more then 3!
+#define NUMBER_OF_LIGHTS 3 // no more then 3!
 
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,
@@ -472,21 +472,16 @@ int Application5::Render()
 	int number_of_triangles = LoadModel(vertexLists, normalLists, uvLists);
 	#endif
 	
-	#ifdef OBJ_ENABLED
 	for (int k = 0; k < number_of_triangles; k++) {
-	#endif
-	#ifndef OBJ_ENABLED
-	for (int k = 0; k < number_of_triangles; k = k + 3) {
-	#endif
 		#ifdef OBJ_ENABLED
 		valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
 		valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
 		valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
 		#endif
 		#ifndef OBJ_ENABLED
-		valueListTriangle[0] = (GzPointer)vertexLists[k]; 
-		valueListTriangle[1] = (GzPointer)normalLists[k]; 
-		valueListTriangle[2] = (GzPointer)uvLists[k]; 
+		valueListTriangle[0] = (GzPointer)vertexLists[3*k]; 
+		valueListTriangle[1] = (GzPointer)normalLists[3*k]; 
+		valueListTriangle[2] = (GzPointer)uvLists[3*k]; 
 		#endif
 		// shadow map rendering
 		for (int i = 0; i < m_pRender->numlights; i++) {
