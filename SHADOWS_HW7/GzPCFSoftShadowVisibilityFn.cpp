@@ -2,72 +2,57 @@
 #include "rend.h"
 #include <math.h> 
 
-float GzPCFSoftShadowVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light) {
-	// In world space
-	float screenX, screenY, screenZ, screenW;
-	multiplyMatrixByVector(x, y, z,(*map).camera.Xiw,&screenX,&screenY,&screenZ,&screenW);
-	
-	if (screenW < 0)
-		return 1.0;
-
-	if (screenZ < 0)
-		return 1.0;
-
-	screenZ /= screenW;
-	
-	float distance_from_light_to_obj = sqrt(((*light).position[0]-x)*((*light).position[0]-x) + ((*light).position[1]-y)*((*light).position[1]-y) + ((*light).position[2]-z)*((*light).position[2]-z));
-
+float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light) {
 	float d = tan((map->camera.FOV / 2.0) * PI / 180.0);
-	float area = ((0.0000001)*screenZ)/(d+screenZ); 
-	multiplyMatrixByVector(area, 0, 0,(*map).camera.Xpi,&screenX,&screenY,&screenZ,&screenW);
-	float area_in_perspective = screenX;
-	multiplyMatrixByVector(area_in_perspective, 0, 0,(*map).Xsp,&screenX,&screenY,&screenZ,&screenW);
-	float area_in_screen = screenX;
-	if(area_in_screen<=(*map).display->xres){
-		
-	}
-		
-	
-	
-	
-	// 1.    Get the z-average
-	// 1.1   Compute the area in image space 
-	// 
-	//1. Get the target points into image space 
-	/*
-	float screenX, screenY, screenZ, screenW;
-	multiplyMatrixByVector(x, y, z,map->Ximage_im[3],&screenX,&screenY,&screenZ,&screenW);
-	if (screenW < 0)
+	float w = 1.0;
+	GzDisplay* display = (GzDisplay*)map->display;
+	///////////////////////////////////
+	float image_x, image_y, image_z;
+	multiplyMatrixByVector(world_x, world_y, world_z, (*map).camera.Xiw, &image_x, &image_y, &image_z, &w);
+	if (w <= 0)
 		return 1.0;
-
-	if (screenZ < 0)
+	image_x /= w;
+	image_y /= w;
+	image_z /= w;
+	///////////////////////////////////
+	float screen_x, screen_y, screen_z; // point coordinates in screen space
+	multiplyMatrixByVector(world_x, world_y, world_z, map->Ximage_from_world[3], &screen_x, &screen_y, &screen_z, &w);
+	if (w <= 0)
 		return 1.0;
+	screen_x /=w; 
+	int int_screen_x = (int)(screen_x + 0.5);
+	screen_y /=w; 
+	int int_screen_y = (int)(screen_y + 0.5);
+	screen_z /=w;
+	///////////////////////////////////
+	float light_size = light->size;
+	float area = (light_size * image_z) / (d + image_z); 
+	int area_radius_in_screen = (int)(area * 0.5 * display->xres / 2.0 + 0.5); // half of the area !
+	int max_x = min(int_screen_x + area_radius_in_screen, display->xres - 1);
+	int max_y = min(int_screen_y + area_radius_in_screen, display->yres - 1);
+	int min_x = max(int_screen_x - area_radius_in_screen, 0);
+	int min_y = max(int_screen_y - area_radius_in_screen, 0);
+	float avg = 0.0;
+	float counter = 0.0; // counts number of samples in avg
 
-	screenZ /= screenW;
-	//Propably error : should be in perspective space 
-	//2. calculate the size of the z-buff area
-	float d = 1/(tan((*map).camera.FOV/2));
-	float area_in_image = (*light).size*screenZ/(d+screenZ);
-	multiplyMatrixByVector(area_in_image, 0, 0,map->Xwi,&screenX,&screenY,&screenZ,&screenW);
-	float area_in_world = screenX;
-	multiplyMatrixByVector(area_in_world, 0, 0,map->Ximage_from_world[3],&screenX,&screenY,&screenZ,&screenW);
-	float area_in_screen = screenX;
-	int t =0;
+	for (int i = min_y; i <= max_y; i++)
+		for (int j = min_x; j <= max_x; j++) {
+			int screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
+			if (INT_MAX == screen_z_from_map) // map value is infinity
+				continue;
+			float z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
+			avg += z_from_map;
+			counter++;
+		}
+	if (counter == 0 || avg == 0)
+		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1);
 	
-	//Transforming this pixel value to screen space
-	/*
-	float screenX, screenY, screenZ, screenW;
-	multiplyMatrixByVector(x, y, z,map->Ximage_from_world[3],&screenX,&screenY,&screenZ,&screenW);
-	if (screenW < 0)
-		return 1.0;
-	screenX /= screenW;
-	screenY /= screenW;
-	screenZ /= screenW;
-	
-	// get the x,y,z point in the shadow map
-	(*light).size;
-	int t =0;
-	*/
-
-	return 1.0;
+	avg /= counter;
+	float filter = light_size * (d + image_z - avg) / avg;	
+	int filter_size = (int)(filter * 0.5 * display->xres + 0.5);
+	if (filter_size % 2 == 0)
+		filter_size++;
+	if (filter_size > FILTER_SIZE_LIMIT)
+		filter_size = FILTER_SIZE_LIMIT;
+	return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, filter_size, filter_size);
 }

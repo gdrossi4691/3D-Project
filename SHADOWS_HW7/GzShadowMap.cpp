@@ -2,7 +2,6 @@
 #include "rend.h"
 #include "math.h"
 
-#define SHADOW_MAP_SIZE 512
 // light position and box positions are in model space...
 int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	// get all the things in camera initialized

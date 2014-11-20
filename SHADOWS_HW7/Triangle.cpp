@@ -130,7 +130,6 @@ int Triangle::calculate_sign(int x, int y /*Edge edges[3]*/){
 int Triangle::int_interpolate(int x, int y, Plane plane) {
 	if (plane.C != 0.0) {
 		double z = -(plane.A * x + plane.B * y + plane.D) / plane.C;
-		//z = (z >= 0) ? z + 0.5 : z - 0.5;
 		int int_z = (z > INT_MAX) ? (INT_MAX - 1) : static_cast<int>(z);
 		return int_z;
 	} else { // C == 0
