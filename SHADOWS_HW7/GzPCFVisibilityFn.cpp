@@ -10,6 +10,10 @@ int is_in_display_range(GzDisplay* display, int valueX, int valueY) {
 		return 0;
 }
 
+float distance_sqr(float x1, float y1, float x2, float y2) {
+	return (x2- x1) * (x2- x1)  + (y2 - y1) * (y2 - y1);
+}
+
 float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y) {
 	float d = 1.0 / tan((map->camera.FOV / 2.0) * (PI / 180.0));
 	float w = 1.0;
@@ -29,8 +33,10 @@ float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* m
 		return 1.0;
 	screen_x /=w; 
 	int int_screen_x = (int)(screen_x + 0.5);
+	float displacement_x = screen_x - int_screen_x;
 	screen_y /=w; 
 	int int_screen_y = (int)(screen_y + 0.5);
+	float displacement_y = screen_y - int_screen_y;
 	screen_z /=w;
 
 	///////////////////////////////////
@@ -78,31 +84,65 @@ float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* m
 		else 
 			return 0.0;
 	}
-	///if orbitrary filter (hard shadows)///
+	///if orbitrary filter///
 	int radius_x = (filter_size_x - 1)/2;
 	int radius_y = (filter_size_y - 1)/2;
+	int radius_sqr = min(radius_x, radius_y) * min(radius_x, radius_y);
+	int_screen_x = int_screen_x - radius_x;
+	int_screen_y = int_screen_y - radius_y;
 	int max_x = min(int_screen_x + radius_x, display->xres - 1);
 	int min_x = max(int_screen_x - radius_x, 0);
 	int max_y = min(int_screen_y + radius_y, display->yres - 1);
 	int min_y = max(int_screen_y - radius_y, 0);
 	
 	float visibility = 0.0;
-	float counter = 0.0;
+	float norm = 0.0;
+	// partial coverage
+	max_x = displacement_x > 0 ? max_x + 1 : max_x;
+	min_x = displacement_x < 0 ? min_x - 1 : min_x;
+	max_y = displacement_y > 0 ? max_y + 1 : max_y; 
+	min_y = displacement_y < 0 ? min_y - 1 : min_y;
+	// screen boundaries
+	max_x = max_x > (display->xres - 1) ? (display->xres - 1) : max_x;
+	min_x = min_x < 0 ? 0 : min_x;
+	max_y = max_y > (display->yres - 1) ? (display->yres - 1) : max_y; 
+	min_y = min_y < 0 ? 0 : min_y;
+	int no_clip_xr = max_x == (display->xres - 1) ?	 0 : 1;
+	int no_clip_xl = min_x == 0 ? 0 : 1;
+	int no_clip_yr = max_y == (display->yres - 1) ?	 0 : 1;
+	int no_clip_yl = min_y == 0 ? 0 : 1;
 
-	for (int i = min_y; i <= max_y; i++)
+	for (int i = min_y; i <= max_y; i++){
+		float y_coaf = 1.0;
+		if (i == 0 && no_clip_yl)
+			y_coaf = displacement_y > 0 ? (1.0 - displacement_y) : displacement_y;
+		if (i == max_y && no_clip_yr)
+			y_coaf = displacement_y > 0 ? displacement_y : (1.0 - displacement_y);
 		for (int j = min_x; j <= max_x; j++) {
-			counter++;
+			float x_coaf = 1.0;
+			if (j == 0 && no_clip_xl)
+				x_coaf = displacement_x > 0 ? (1.0 - displacement_x) : displacement_x;
+			if (j  == max_x && no_clip_xr)
+				x_coaf = displacement_x > 0 ? displacement_x : (1.0 - displacement_x);
+
+			float d_sqr = distance_sqr(j, i, int_screen_x, int_screen_y);
+			if (d_sqr > radius_sqr) // skip points
+				continue;
+			float coaf = 1.0; //radius_sqr - d_sqr;
 			int screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
 			if (INT_MAX == screen_z_from_map){ // map value is infinity
-				visibility += 1.0;
+				visibility += x_coaf * y_coaf * coaf;
+				norm += x_coaf * y_coaf * coaf;
 				continue;
 			}
 			z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
 			float diff = image_z - z_from_map; // compare z in image space 
 			if (diff <= Z_DIFFERENCE_THRESHOLD) // visible
-				visibility += 1.0; // else add 0.0
+				visibility += x_coaf * y_coaf * coaf; // else add 0.0
+			norm += x_coaf * y_coaf * coaf;
 		}
-	visibility = counter != 0 ? visibility / counter : 1;
+	}
+	visibility = norm != 0.0 ? visibility / norm : 1;
 	return visibility;
 }
 
