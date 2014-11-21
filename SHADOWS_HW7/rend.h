@@ -20,14 +20,14 @@
 #define PCF_SHADOW_ALGORITHM  1
 #define PCFS_SHADOW_ALGORITHM 2
 
-#define SHADOW_ALGORITHM PCF_SHADOW_ALGORITHM
+#define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
 
-#define	Z_DIFFERENCE_THRESHOLD  0.2
-#define	FILTER_SIZE_X 19 // odd only!
-#define	FILTER_SIZE_Y 19 // odd only!
+#define	Z_DIFFERENCE_THRESHOLD  0.05
+#define	FILTER_SIZE_X 7 // odd only!
+#define	FILTER_SIZE_Y 7 // odd only!
 #define	FILTER_SIZE_LIMIT 21
-#define LIGHT_SIZE 0.2
-#define SHADOW_MAP_SIZE 512
+#define LIGHT_SIZE 0.25
+#define SHADOW_MAP_SIZE 700
 
 #pragma once
 typedef struct {

@@ -88,13 +88,43 @@ float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* m
 	int radius_x = (filter_size_x - 1)/2;
 	int radius_y = (filter_size_y - 1)/2;
 	int radius_sqr = min(radius_x, radius_y) * min(radius_x, radius_y);
-	int_screen_x = int_screen_x - radius_x;
-	int_screen_y = int_screen_y - radius_y;
 	int max_x = min(int_screen_x + radius_x, display->xres - 1);
 	int min_x = max(int_screen_x - radius_x, 0);
 	int max_y = min(int_screen_y + radius_y, display->yres - 1);
 	int min_y = max(int_screen_y - radius_y, 0);
 	
+	/*
+	int is_flat = 1;
+	float delta = 0.05;
+	for (int i = min_y; i <= max_y; i++){
+		int screen_z_from_map = display->fbuf[ARRAY(min_x, i)].z; 
+		if (INT_MAX == screen_z_from_map) // map value is infinity
+			continue;
+		float cur_row = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
+		for (int j = min_x; j <= max_x; j++) {
+			screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
+			if (INT_MAX == screen_z_from_map) // map value is infinity
+				continue;
+			float z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
+			if (z_from_map - cur_row > delta || cur_row - z_from_map > delta) {
+				is_flat = 0;
+				break;
+			}
+		}
+		if (!is_flat)
+			break;
+	}
+	if (is_flat)
+		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1);
+	*/
+
+	int_screen_x = int_screen_x - (radius_x > 4 ? 4 : radius_x);
+	int_screen_y = int_screen_y - (radius_y > 4 ? 4 : radius_y);
+	max_x = min(int_screen_x + radius_x, display->xres - 1);
+	min_x = max(int_screen_x - radius_x, 0);
+	max_y = min(int_screen_y + radius_y, display->yres - 1);
+	min_y = max(int_screen_y - radius_y, 0);
+
 	float visibility = 0.0;
 	float norm = 0.0;
 	// partial coverage

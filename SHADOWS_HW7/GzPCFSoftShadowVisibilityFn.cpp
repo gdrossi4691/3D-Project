@@ -41,8 +41,10 @@ float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, G
 			if (INT_MAX == screen_z_from_map) // map value is infinity
 				continue;
 			float z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
-			avg += z_from_map;
-			counter++;
+			if (z_from_map < image_z) {
+				avg += z_from_map;
+				counter++;
+			}
 		}
 	if (counter == 0 || avg == 0)
 		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1);

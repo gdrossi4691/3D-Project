@@ -19,17 +19,17 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define INFILE  "newmodel_.asc"
-//#define INFILE  "board.obj"
+//#define INFILE  "newmodel_.asc"
+#define INFILE  "board.obj"
 #define OUTFILE  "output.ppm"
 
 #define IMAGE_SIZE  512
 
 #define MAX_NUMBER_OF_TRIANGLES 150000
 
-//#define AA_ENABLED
+#define AA_ENABLED
 
-//#define OBJ_ENABLED
+#define OBJ_ENABLED
 
 #define NUMBER_OF_LIGHTS 1 // no more then 3!
 
@@ -118,7 +118,7 @@ int Application5::Initialize()
 
 	float w;
 	/* Light */
-	GzLight	light1 = { {10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.5, 0.5, 0.9}, LIGHT_SIZE};
+	GzLight	light1 = { {10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.8, 0.8, 0.9}, LIGHT_SIZE};
 	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
 	light1.position_im[0] /= w;
@@ -250,11 +250,15 @@ int Application5::LoadObjModel(Model** pModel){
 	}
 
 	int obj_count = -1;
+	int no_uv = 0;
    	while(!feof(output)){
 		float x = 0.0f, y = 0.0f, z = 0.0f;
 		ch = fgetc(output);
 		pModel[number_of_triangles] = new Model();
 		switch(ch) {
+		case 'n':fgets(strLine, 100, output);
+				no_uv = 1;
+				break;
 		case 'o':fgets(strLine, 100, output);
 				obj_count++;
 				break;
@@ -272,7 +276,7 @@ int Application5::LoadObjModel(Model** pModel){
 				 c = fgetc(output);
 				 break;
 		case 'f':c = fgetc(output);
-			    if(c==' ') {
+			    if(c==' ' && !no_uv) {
 					fscanf(output, "%d/%d/%d %d/%d/%d %d/%d/%d",&v[0],&t[0],&vn[0]
 														,&v[1],&t[1],&vn[1]
 														,&v[2],&t[2],&vn[2]);
@@ -285,6 +289,20 @@ int Application5::LoadObjModel(Model** pModel){
 						(pModel[number_of_triangles])->normal[m][2]=NewNormal[vn[m]-1][2];
 						(pModel[number_of_triangles])->text[m][0]=Newtext[t[m]-1][0];
 						(pModel[number_of_triangles])->text[m][1]=Newtext[t[m]-1][1];
+					}													  
+					number_of_triangles++;
+				} 
+				if(c==' ' && no_uv ) {
+					fscanf(output, "%d//%d %d//%d %d//%d",&v[0],&vn[0]
+														,&v[1],&vn[1]
+														,&v[2],&vn[2]);
+					for(int m=0;m<3;m++) {
+						(pModel[number_of_triangles])->side[m][0]=NewVertex[v[m]-1][0]/1.0;
+						(pModel[number_of_triangles])->side[m][1]=NewVertex[v[m]-1][1]/1.0;
+						(pModel[number_of_triangles])->side[m][2]=NewVertex[v[m]-1][2]/1.0;
+						(pModel[number_of_triangles])->normal[m][0]=NewNormal[vn[m]-1][0];
+						(pModel[number_of_triangles])->normal[m][1]=NewNormal[vn[m]-1][1];
+						(pModel[number_of_triangles])->normal[m][2]=NewNormal[vn[m]-1][2];
 					}													  
 					number_of_triangles++;
 				}
