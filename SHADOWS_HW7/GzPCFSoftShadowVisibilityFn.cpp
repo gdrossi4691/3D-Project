@@ -2,7 +2,7 @@
 #include "rend.h"
 #include <math.h> 
 
-float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light) {
+float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, float cos_a) {
 	float d = tan((map->camera.FOV / 2.0) * PI / 180.0);
 	float w = 1.0;
 	GzDisplay* display = (GzDisplay*)map->display;
@@ -47,7 +47,7 @@ float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, G
 			}
 		}
 	if (counter == 0 || avg == 0)
-		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1);
+		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1, cos_a);
 	
 	avg /= counter;
 	float filter = light_size * (d + image_z - avg) / avg;	
@@ -56,5 +56,5 @@ float GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float world_z, G
 		filter_size++;
 	if (filter_size > FILTER_SIZE_LIMIT)
 		filter_size = FILTER_SIZE_LIMIT;
-	return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, filter_size, filter_size);
+	return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, filter_size, filter_size, cos_a);
 }

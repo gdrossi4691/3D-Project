@@ -19,17 +19,17 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-//#define INFILE  "newmodel_.asc"
-#define INFILE  "board.obj"
+#define INFILE  "newmodel__.asc"
+//#define INFILE  "board.obj"
 #define OUTFILE  "output.ppm"
 
 #define IMAGE_SIZE  512
 
 #define MAX_NUMBER_OF_TRIANGLES 150000
 
-#define AA_ENABLED
+//#define AA_ENABLED
 
-#define OBJ_ENABLED
+//#define OBJ_ENABLED
 
 #define NUMBER_OF_LIGHTS 1 // no more then 3!
 
@@ -139,13 +139,13 @@ int Application5::Initialize()
 	light3.position_im[1] /= w;
 	light3.position_im[2] /= w;
 	
-	GzLight	ambientlight = { {0, 0, 0}, {0, 0, 0}, {0.3, 0.3, 0.3}, 1};
+	GzLight	ambientlight = { {0, 0, 0}, {0, 0, 0}, {0.5, 0.5, 0.5}, 1};
 
 	GzBoundingBox	bbox = { -10.0, 10.0, -10.0, 10.0, -10.0, 10.0};
 
 	/* Material property */
 	GzColor specularCoefficient = { 0.3, 0.3, 0.3 };
-	GzColor ambientCoefficient = { 0.2, 0.2, 0.2 };
+	GzColor ambientCoefficient = { 0.3, 0.3, 0.3 };
 	GzColor diffuseCoefficient = {0.7, 0.7, 0.7};
 
 /* 

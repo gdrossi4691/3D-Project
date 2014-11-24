@@ -66,13 +66,13 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	// shortest_distance_from_camera_to_plane can be replace by distance_from_camera_to_center_cube
 	float shortest_distance_from_camera_to_plane = sqrt((x_MIN*x_MIN)+ (y_MIN*y_MIN) + (z_MIN*z_MIN));
 
-	GzCoord look_at_point = {(bbox->Xmax+bbox->Xmin)/2, (bbox->Ymax+bbox->Ymin)/2, (bbox->Zmax+bbox->Zmin)/2};
+	GzCoord look_at_point = {5, 0, 5};
 	float distance_from_camera_to_center_cube = sqrt(  ((*light).position[0]-look_at_point[0])*((*light).position[0]-look_at_point[0])+ (((*light).position[1]-look_at_point[1])*((*light).position[1]-look_at_point[1])) + ((*light).position[2]-look_at_point[2])*  ((*light).position[2]-look_at_point[2]));
 
 	float FOV_in_radius = (diagono_distance_on_the_plane/distance_from_camera_to_center_cube);
 
 
-	(*map)->camera.FOV = 90; //FIXME
+	(*map)->camera.FOV = 83; //FIXME
 	(*map)->camera.position[0] = (*light).position[0];
 	(*map)->camera.position[1] = (*light).position[1];
 	(*map)->camera.position[2] = (*light).position[2];
@@ -83,7 +83,6 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	(*map)->camera.worldup[1] = 1;
 	(*map)->camera.worldup[2] = 0;
 	GzBeginRender(*map);
-	int t =0;
 	return GZ_SUCCESS;
 }
 

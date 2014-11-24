@@ -20,14 +20,15 @@
 #define PCF_SHADOW_ALGORITHM  1
 #define PCFS_SHADOW_ALGORITHM 2
 
-#define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
+#define SHADOW_ALGORITHM PCF_SHADOW_ALGORITHM
 
-#define	Z_DIFFERENCE_THRESHOLD  0.05
-#define	FILTER_SIZE_X 7 // odd only!
-#define	FILTER_SIZE_Y 7 // odd only!
-#define	FILTER_SIZE_LIMIT 21
+#define	CONSTANT_BAIS  0.001 // baist sihft
+#define	CENTER_SHIFT_LIMIT 0
+#define	FILTER_SIZE_X 5 // odd only!
+#define	FILTER_SIZE_Y 5 // odd only!
+#define	FILTER_SIZE_LIMIT 31
 #define LIGHT_SIZE 0.25
-#define SHADOW_MAP_SIZE 700
+#define SHADOW_MAP_SIZE 800
 
 #pragma once
 typedef struct {
@@ -55,7 +56,6 @@ typedef struct GzRender {			/* define a renderer */
   int			interp_mode;
   int			numlights;
   GzLight		lights[MAX_LIGHTS];
-//  struct GzRender*	lights_shadow_maps[MAX_LIGHTS];
   struct GzRender*	lights_shadow_maps[MAX_LIGHTS];
   GzLight		ambientlight;
   GzColor		Ka, Kd, Ks;
@@ -110,13 +110,13 @@ int GzNewPerspectiveShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBo
 int GzDeleteShadowMapCamera(GzRender* map);
 
 int is_in_display_range(GzDisplay* display, int valueX, int valueY);
-float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y);
+float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y, float cos_a);
 // Hard shadows. x,y,z are coordinates of the point in world.
-float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
 // Percentage Closer Filter. Filter has a fixed-size kernel. x,y,z are coordinates of the point in world.
-float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
 // Percentage Closer Filter with with dynamic kernel size. Penumbra size depends on light area size. x,y,z are coordinates of the point in world.
-float GzPCFSoftShadowVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+float GzPCFSoftShadowVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
 
 
 
@@ -267,6 +267,7 @@ private :
 
 	void compute_gouraud_color(double x_im, double y_im, double z_im, GzColor* color, GzRender *render);
 
+	void compute_normal(float* x, float* y, float* z);
 public :
 	void init_triangle(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z,    
 		float p1X_im, float p1Y_im, float p1Z_im, float p2X_im, float p2Y_im, float p2Z_im, float p3X_im, float p3Y_im, float p3Z_im,    

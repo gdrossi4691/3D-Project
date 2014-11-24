@@ -204,14 +204,6 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 	z /= w;
 	
 	for (int i = 0; i < render->numlights; i++) {
-		float visibility;
-		if (SHADOW_ALGORITHM == HARD_SHADOW_ALGORITHM)
-			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
-		if (SHADOW_ALGORITHM == PCF_SHADOW_ALGORITHM)
-			visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
-		if (SHADOW_ALGORITHM == PCFS_SHADOW_ALGORITHM)
-			visibility = GzPCFSoftShadowVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
-
 		float lx = render->lights[i].position_im[0] - x_im;
 		float ly = render->lights[i].position_im[1] - y_im;
 		float lz = render->lights[i].position_im[2] - z_im;
@@ -219,7 +211,6 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 
 		float N_L_dot_product = multipy_vectors(nx, ny, nz, lx, ly, lz);
 		float N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
-		//FIXME: -0.1 !!!
 		if ((N_L_dot_product  < 0.0 && N_E_dot_product > -0.0) || (N_L_dot_product > 0.0 && N_E_dot_product < 0.0))
 			continue;
 		if (N_L_dot_product  < 0.0 && N_E_dot_product < 0.0){
@@ -229,6 +220,23 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 			N_L_dot_product = multipy_vectors(nx, ny, nz, lx, ly, lz);
 			N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
 		}
+
+		GzCoord light_z_in_world; // in world space
+		light_z_in_world[0] = render->lights[i].position[0] - render->lights_shadow_maps[i]->camera.lookat[0];
+		light_z_in_world[1] = render->lights[i].position[1] - render->lights_shadow_maps[i]->camera.lookat[1];
+		light_z_in_world[2] = render->lights[i].position[2] - render->lights_shadow_maps[i]->camera.lookat[2];
+		GzNormalize_vector(&(light_z_in_world[0]), &(light_z_in_world[1]), &(light_z_in_world[2]));
+		
+		float cos_a = multipy_vectors(0, 1, 0, light_z_in_world[0], light_z_in_world[1], light_z_in_world[2]);
+
+		float visibility;
+		if (SHADOW_ALGORITHM == HARD_SHADOW_ALGORITHM)
+			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+		if (SHADOW_ALGORITHM == PCF_SHADOW_ALGORITHM)
+			visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+		if (SHADOW_ALGORITHM == PCFS_SHADOW_ALGORITHM)
+			visibility = GzPCFSoftShadowVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+
 
 		float rx = 2.0 * nx * N_L_dot_product - lx;
 		float ry = 2.0 * ny * N_L_dot_product - ly;
