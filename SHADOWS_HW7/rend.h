@@ -20,15 +20,14 @@
 #define PCF_SHADOW_ALGORITHM  1
 #define PCFS_SHADOW_ALGORITHM 2
 
-#define SHADOW_ALGORITHM PCF_SHADOW_ALGORITHM
+#define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
 
-#define	CONSTANT_BAIS  0.001 // baist sihft
-#define	CENTER_SHIFT_LIMIT 0
-#define	FILTER_SIZE_X 5 // odd only!
-#define	FILTER_SIZE_Y 5 // odd only!
+#define	CONSTANT_BAIS  0.0001 // baist sihft
+#define	FILTER_SIZE_X 5 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_Y 5 // odd only! used only for PCF_SHADOW_ALGORITHM
 #define	FILTER_SIZE_LIMIT 31
 #define LIGHT_SIZE 0.25
-#define SHADOW_MAP_SIZE 800
+#define SHADOW_MAP_SIZE 700
 
 #pragma once
 typedef struct {
@@ -110,15 +109,6 @@ int GzNewPerspectiveShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBo
 int GzDeleteShadowMapCamera(GzRender* map);
 
 int is_in_display_range(GzDisplay* display, int valueX, int valueY);
-float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y, float cos_a);
-// Hard shadows. x,y,z are coordinates of the point in world.
-float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
-// Percentage Closer Filter. Filter has a fixed-size kernel. x,y,z are coordinates of the point in world.
-float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
-// Percentage Closer Filter with with dynamic kernel size. Penumbra size depends on light area size. x,y,z are coordinates of the point in world.
-float GzPCFSoftShadowVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light, float cos_a);
-
-
 
 void GzNormalize_vector(float* x, float* y, float* z);
 #pragma once
@@ -221,6 +211,7 @@ private:
 		};
 
 private :
+	float world_x1, world_y1, world_z1, world_x2, world_y2, world_z2, world_x3, world_y3, world_z3;
 	Edge edges[3];
 	BoundingBox b_box;
 	
@@ -268,8 +259,19 @@ private :
 	void compute_gouraud_color(double x_im, double y_im, double z_im, GzColor* color, GzRender *render);
 
 	void compute_normal(float* x, float* y, float* z);
+
+	void compute_cos(float* cos_ax, float* cos_ay, float* sin_ax, float* sin_ay, GzRender* map, GzLight* light);
+	float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y);
+	// Hard shadows. x,y,z are coordinates of the point in world.
+	float GzSimpleVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+	// Percentage Closer Filter. Filter has a fixed-size kernel. x,y,z are coordinates of the point in world.
+	float GzPCFVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+	// Percentage Closer Filter with with dynamic kernel size. Penumbra size depends on light area size. x,y,z are coordinates of the point in world.
+	float GzPCFSoftShadowVisibilityFn(float x, float y, float z, GzRender* map, GzLight* light);
+
 public :
-	void init_triangle(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z,    
+	void init_triangle(float world_x1, float world_y1, float world_z1, float world_x2, float world_y2, float world_z2, float world_x3, float world_y3, float world_z3,
+		float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z,    
 		float p1X_im, float p1Y_im, float p1Z_im, float p2X_im, float p2Y_im, float p2Z_im, float p3X_im, float p3Y_im, float p3Z_im,    
 		float n1X, float n1Y, float n1Z, float n2X, float n2Y, float n2Z, float n3X, float n3Y, float n3Z, 
 		float p1U, float p1V, float p2U, float p2V, float p3U, float p3V, GzRender* render);

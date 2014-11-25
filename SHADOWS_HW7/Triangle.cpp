@@ -221,21 +221,13 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 			N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
 		}
 
-		GzCoord light_z_in_world; // in world space
-		light_z_in_world[0] = render->lights[i].position[0] - render->lights_shadow_maps[i]->camera.lookat[0];
-		light_z_in_world[1] = render->lights[i].position[1] - render->lights_shadow_maps[i]->camera.lookat[1];
-		light_z_in_world[2] = render->lights[i].position[2] - render->lights_shadow_maps[i]->camera.lookat[2];
-		GzNormalize_vector(&(light_z_in_world[0]), &(light_z_in_world[1]), &(light_z_in_world[2]));
-		
-		float cos_a = multipy_vectors(0, 1, 0, light_z_in_world[0], light_z_in_world[1], light_z_in_world[2]);
-
 		float visibility;
 		if (SHADOW_ALGORITHM == HARD_SHADOW_ALGORITHM)
-			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 		if (SHADOW_ALGORITHM == PCF_SHADOW_ALGORITHM)
-			visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+			visibility = GzPCFVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 		if (SHADOW_ALGORITHM == PCFS_SHADOW_ALGORITHM)
-			visibility = GzPCFSoftShadowVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i], cos_a);
+			visibility = GzPCFSoftShadowVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 
 
 		float rx = 2.0 * nx * N_L_dot_product - lx;
@@ -318,7 +310,8 @@ void Triangle::compute_gouraud_color(double x_im, double y_im, double z_im, GzCo
 }
 
 // public
-void Triangle::init_triangle(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z,    
+void Triangle::init_triangle(float world_x1, float world_y1, float world_z1, float world_x2, float world_y2, float world_z2, float world_x3, float world_y3, float world_z3,    
+	float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z,    
 	float p1X_im, float p1Y_im, float p1Z_im, float p2X_im, float p2Y_im, float p2Z_im, float p3X_im, float p3Y_im, float p3Z_im,    
 	float n1X, float n1Y, float n1Z, float n2X, float n2Y, float n2Z, float n3X, float n3Y, float n3Z, 
 	float p1U, float p1V, float p2U, float p2V, float p3U, float p3V, GzRender* render) {
@@ -326,6 +319,19 @@ void Triangle::init_triangle(float p1X, float p1Y, float p1Z, float p2X, float p
 	b_box = init_bounding_box(p1X, p1Y, p2X, p2Y, p3X, p3Y);
 	plane = init_plane(p1X, p1Y, p1Z, p2X, p2Y, p2Z, p3X, p3Y, p3Z);
 	plane_im = init_plane(p1X_im, p1Y_im, p1Z_im, p2X_im, p2Y_im, p2Z_im, p3X_im, p3Y_im, p3Z_im);
+
+	this->world_x1 = world_x1;
+	this->world_y1 = world_y1;
+	this->world_z1 = world_z1;
+
+	this->world_x2 = world_x2;
+	this->world_y2 = world_y2;
+	this->world_z2 = world_z2;
+
+	this->world_x3 = world_x3;
+	this->world_y3 = world_y3;
+	this->world_z3 = world_z3;
+
 	init_edges(p1X, p1Y, p1Z, p2X, p2Y, p2Z, p3X, p3Y, p3Z, 
 		p1X_im, p1Y_im, p1Z_im, p2X_im, p2Y_im, p2Z_im, p3X_im, p3Y_im, p3Z_im);
 

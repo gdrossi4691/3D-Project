@@ -529,6 +529,7 @@ int GzPutTriangle(GzRender	*render, int numParts, GzToken *nameList, GzPointer	*
 	bool is_texture_set = false;
 	float x1, y1, z1, x2, y2, z2, x3, y3, z3;
 	float x1_im, y1_im, z1_im, x2_im, y2_im, z2_im, x3_im, y3_im, z3_im;
+	float x1_world, y1_world, z1_world, x2_world, y2_world, z2_world, x3_world, y3_world, z3_world;
 	float nx1, ny1, nz1, nx2, ny2, nz2, nx3, ny3, nz3;
 	float p1U, p1V, p2U, p2V, p3U, p3V;
 
@@ -577,6 +578,20 @@ int GzPutTriangle(GzRender	*render, int numParts, GzToken *nameList, GzPointer	*
 			y3_im /= w3;
 			z3_im /= w3;
 
+			multiplyMatrixByVector(x1_im, y1_im, z1_im, render->Xwi, &x1_world, &y1_world, &z1_world, &w1);
+			multiplyMatrixByVector(x2_im, y2_im, z2_im, render->Xwi, &x2_world, &y2_world, &z2_world, &w2);
+			multiplyMatrixByVector(x3_im, y3_im, z3_im, render->Xwi, &x3_world, &y3_world, &z3_world, &w3);
+			
+			x1_world /= w1;
+			y1_world /= w1;
+			z1_world /= w1;
+			x2_world /= w2;
+			y2_world /= w2;
+			z2_world /= w2;
+			x3_world /= w3;
+			y3_world /= w3;
+			z3_world /= w3;
+
 			is_position_set = true;
 		}
 
@@ -621,7 +636,8 @@ int GzPutTriangle(GzRender	*render, int numParts, GzToken *nameList, GzPointer	*
 		}
 
 		if (is_normal_set && is_position_set && is_texture_set ) {
-			tr.init_triangle(x1 + render->display->x_shift, y1 + render->display->y_shift, z1, 
+			tr.init_triangle(x1_world, y1_world, z1_world, x2_world, y2_world, z2_world, x3_world, y3_world, z3_world,
+							x1 + render->display->x_shift, y1 + render->display->y_shift, z1, 
 							x2 + render->display->x_shift, y2 + render->display->y_shift, z2, 
 							x3 + render->display->x_shift, y3 + render->display->y_shift, z3, 
 							x1_im, y1_im, z1_im, x2_im, y2_im, z2_im, x3_im, y3_im, z3_im, 
