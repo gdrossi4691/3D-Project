@@ -22,12 +22,18 @@
 
 #define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
 
+#define AVERAGE_WEIGHT_FN 0
+#define SQR_DIST_WEIGHT_FN  1
+#define DIST_INVERS_WEIGHT_FN 2
+
+#define WEIGHT_FN SQR_DIST_WEIGHT_FN
+
 #define	CONSTANT_BAIS  0.0001 // baist sihft
-#define	FILTER_SIZE_X 5 // odd only! used only for PCF_SHADOW_ALGORITHM
-#define	FILTER_SIZE_Y 5 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_X 17 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_Y 17 // odd only! used only for PCF_SHADOW_ALGORITHM
 #define	FILTER_SIZE_LIMIT 31
 #define LIGHT_SIZE 0.25
-#define SHADOW_MAP_SIZE 700
+#define SHADOW_MAP_SIZE 512
 
 #pragma once
 typedef struct {
@@ -259,6 +265,10 @@ private :
 	void compute_gouraud_color(double x_im, double y_im, double z_im, GzColor* color, GzRender *render);
 
 	void compute_normal(float* x, float* y, float* z);
+
+	int rotX(float cos_ax, float sin_ax, float* x, float* y, float* z);
+
+	int rotY(float cos_ax, float sin_ax, float* x, float* y, float* z);
 
 	void compute_cos(float* cos_ax, float* cos_ay, float* sin_ax, float* sin_ay, GzRender* map, GzLight* light);
 	float GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y);

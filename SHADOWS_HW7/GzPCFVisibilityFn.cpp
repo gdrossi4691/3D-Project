@@ -55,7 +55,7 @@ void Triangle::compute_cos(float* cos_ax, float* cos_ay, float* sin_ax, float* s
 	*sin_ax = -n_y;
 }
 
-int rotX(float cos_ax, float sin_ax, float* x, float* y, float* z) {
+int Triangle::rotX(float cos_ax, float sin_ax, float* x, float* y, float* z) {
 	GzMatrix m = { 
 		1.0,	0.0,	0.0,	0.0, 
 		0.0,	cos_ax,	-sin_ax,	0.0, 
@@ -76,7 +76,7 @@ int rotX(float cos_ax, float sin_ax, float* x, float* y, float* z) {
 		return GZ_FAILURE;
 }
 
-int rotY(float cos_ay, float sin_ay, float* x, float* y, float* z) {
+int Triangle::rotY(float cos_ay, float sin_ay, float* x, float* y, float* z) {
 	GzMatrix m = { 
 		cos_ay,	0.0,	sin_ay,	0.0, 
 		0.0,	1.0,	0.0,	0.0, 
@@ -127,6 +127,14 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 	image_x /=w;
 	image_y /=w;
 	image_z /=w;
+	float image_x_rotated = image_x;
+	float image_y_rotated = image_y;
+	float image_z_rotated = image_z;
+
+	float cos_ax, cos_ay, sin_ax, sin_ay;
+	compute_cos(&cos_ax, &cos_ay, &sin_ax, &sin_ay, map, light);
+	rotY(cos_ay, sin_ay, &image_x_rotated, &image_y_rotated, &image_z_rotated);
+	rotX(cos_ax, sin_ax, &image_x_rotated, &image_y_rotated, &image_z_rotated);
 	///////////////////////////////////
 	float screen_x, screen_y, screen_z; // point coordinates in screen space
 	multiplyMatrixByVector(world_x, world_y, world_z, map->Ximage_from_world[3], &screen_x, &screen_y, &screen_z, &w);
@@ -168,6 +176,10 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 			INT_MAX == (display->fbuf[ARRAY(D_x, D_y)].z) ){ // use only closest point (which is visible)
 			int screen_z_from_map = display->fbuf[ARRAY(int_screen_x, int_screen_y)].z; 
 			z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map);
+			float x_from_map = (2.0 * screen_x / map->display->xres - 1.0) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			float y_from_map = (1.0 - 2.0 * screen_y / map->display->yres) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			rotY(cos_ay, sin_ay, &x_from_map, &y_from_map, &z_from_map);
+			rotX(cos_ax, sin_ax, &x_from_map, &y_from_map, &z_from_map);
 		}
 		else {	// else use bilinear interpolation in image space:
 			float Ascreen_z = display->fbuf[ARRAY(A_x, A_y)].z;
@@ -178,9 +190,14 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 			float t = screen_y - A_y;
 			float screen_z_from_map = s * t * Cscreen_z + (1.0 - s) * t * Dscreen_z + s * (1.0 - t) * Bscreen_z + (1.0 - s) * (1.0 - t) * Ascreen_z;
 			z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map);
+			float x_from_map = (2.0 * screen_x / map->display->xres - 1.0) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			float y_from_map = (1.0 - 2.0 * screen_y / map->display->yres) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			rotY(cos_ay, sin_ay, &x_from_map, &y_from_map, &z_from_map);
+			rotX(cos_ax, sin_ax, &x_from_map, &y_from_map, &z_from_map);
 		}
-		float diff = image_z - z_from_map; // compare z in image space 
-		if (diff <= CONSTANT_BAIS)
+
+		float diff = image_z_rotated - z_from_map; // compare z in image space 
+		if (diff <= 1000*CONSTANT_BAIS)
 			return 1.0;
 		else 
 			return 0.0;
@@ -211,15 +228,6 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 	int no_clip_yr = max_y == (display->yres - 1) ?	 0 : 1;
 	int no_clip_yl = min_y == 0 ? 0 : 1;
 
-	float image_x_rotated = image_x;
-	float image_y_rotated = image_y;
-	float image_z_rotated = image_z;
-
-	float cos_ax, cos_ay, sin_ax, sin_ay;
-	compute_cos(&cos_ax, &cos_ay, &sin_ax, &sin_ay, map, light);
-	rotY(cos_ay, sin_ay, &image_x_rotated, &image_y_rotated, &image_z_rotated);
-	rotX(cos_ax, sin_ax, &image_x_rotated, &image_y_rotated, &image_z_rotated);
-
 	for (int i = min_y; i <= max_y; i++){
 		float y_coaf = 1.0;
 		if (i == 0 && no_clip_yl)
@@ -235,7 +243,11 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 				x_coaf = displacement_x > 0 ? displacement_x : (1.0 - displacement_x);
 
 			float weight = 1.0;
-			weight = sqr_dist_weight_fn(j, i, screen_x, screen_y, radius_sqr);
+			if (WEIGHT_FN == SQR_DIST_WEIGHT_FN)
+				weight = sqr_dist_weight_fn(j, i, screen_x, screen_y, radius_sqr);
+			if (WEIGHT_FN == DIST_INVERS_WEIGHT_FN)
+				weight = invers_sqr_dist_weight_fn(j, i, screen_x, screen_y);
+
 			int screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
 			if (INT_MAX == screen_z_from_map){ // map value is infinity
 				visibility += x_coaf * y_coaf * weight;
@@ -243,8 +255,8 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 				continue;
 			}
 			z_from_map = screen_z_from_map * d / (INT_MAX - screen_z_from_map); // in image space
-			float x_from_map = (2.0 * (j - map->display->x_shift) / map->display->xres - 1.0) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
-			float y_from_map = (1.0 - 2.0 * (i - map->display->y_shift) / map->display->yres) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			float x_from_map = (2.0 * j / map->display->xres - 1.0) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
+			float y_from_map = (1.0 - 2.0 * i / map->display->yres) * (((float)screen_z_from_map) / (INT_MAX - (float)screen_z_from_map) + 1.0); // in image space
 			rotY(cos_ay, sin_ay, &x_from_map, &y_from_map, &z_from_map);
 			rotX(cos_ax, sin_ax, &x_from_map, &y_from_map, &z_from_map);
 

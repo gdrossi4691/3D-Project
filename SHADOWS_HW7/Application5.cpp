@@ -20,7 +20,7 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 #define INFILE  "newmodel_.asc"
-#define INFILE  "board.obj"
+//#define INFILE  "board.obj"
 #define OUTFILE  "output.ppm"
 
 #define IMAGE_SIZE  512
@@ -29,7 +29,7 @@ static char THIS_FILE[]=__FILE__;
 
 //#define AA_ENABLED
 
-#define OBJ_ENABLED
+//#define OBJ_ENABLED
 
 #define NUMBER_OF_LIGHTS 1 // no more then 3!
 

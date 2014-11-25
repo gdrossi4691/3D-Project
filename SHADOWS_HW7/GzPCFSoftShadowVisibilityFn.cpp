@@ -52,6 +52,8 @@ float Triangle::GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float 
 	avg /= counter;
 	float filter = light_size * (d + image_z - avg) / avg;	
 	int filter_size = (int)(filter * 0.5 * display->xres + 0.5);
+	if (filter_size < 17)
+		filter_size /= 2;
 	if (filter_size % 2 == 0)
 		filter_size++;
 	if (filter_size > FILTER_SIZE_LIMIT)
