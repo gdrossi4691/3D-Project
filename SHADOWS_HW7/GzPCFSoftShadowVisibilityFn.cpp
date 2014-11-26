@@ -52,13 +52,16 @@ float Triangle::GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float 
 	avg /= counter;
 	
 	float ocluder_dist = avg; 
-	float filter = (pow(abs(10.0 - image_z), 1.4) / 40.0) * light_size * (d + image_z - ocluder_dist) / ocluder_dist;	
+	float filter = light_size * (d + image_z - ocluder_dist) / ocluder_dist;	
+	#ifdef VANILA
+	filter = (pow(abs(10.0 - image_z), 1.4) / 40.0) * light_size * (d + image_z - ocluder_dist) / ocluder_dist;	
+	#endif
 	int filter_size = (int)(filter * 0.5 * display->xres + 0.5);
 	if (filter_size % 2 == 0)	
 		filter_size++;
-	if (filter_size > FILTER_SIZE_LIMIT)
-		filter_size = FILTER_SIZE_LIMIT;
-	if (filter_size < 5)
-		filter_size = 5;
+	if (filter_size > FILTER_SIZE_LIMIT_MAX)
+		filter_size = FILTER_SIZE_LIMIT_MAX;
+	if (filter_size < FILTER_SIZE_LIMIT_MIN)
+		filter_size = FILTER_SIZE_LIMIT_MIN;
 	return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, filter_size, filter_size);
 }

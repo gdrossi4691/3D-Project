@@ -133,6 +133,9 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 
 	float cos_ax, cos_ay, sin_ax, sin_ay;
 	compute_cos(&cos_ax, &cos_ay, &sin_ax, &sin_ay, map, light);
+	float is_parallel = 0.0;
+	if (cos_ay < 0.05)
+		is_parallel = 0.3;
 	rotY(cos_ay, sin_ay, &image_x_rotated, &image_y_rotated, &image_z_rotated);
 	rotX(cos_ax, sin_ax, &image_x_rotated, &image_y_rotated, &image_z_rotated);
 	///////////////////////////////////
@@ -248,6 +251,13 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 			if (WEIGHT_FN == DIST_INVERS_WEIGHT_FN)
 				weight = invers_sqr_dist_weight_fn(j, i, screen_x, screen_y);
 
+			#ifdef VANILA
+			if (filter_size_x <= 7)
+				weight = 1.0;
+			if (filter_size_x > 7 && filter_size_x < 19)
+				weight = (0.1 * weight + 1.0) / 2.0;
+			#endif
+
 			int screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
 			if (INT_MAX == screen_z_from_map){ // map value is infinity
 				visibility += x_coaf * y_coaf * weight;
@@ -268,6 +278,8 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 	}
 	visibility = norm != 0.0 ? (visibility / norm) : 1;
 	visibility = visibility > 1.0 ? 1.0 : visibility;
+	if (is_parallel != 0.0)
+		visibility *= is_parallel;
 	return visibility;
 }
 

@@ -310,7 +310,7 @@ int GzPushMatrix(GzRender *render, GzMatrix	matrix)
 - push a matrix onto the Ximage stack
 - check for stack overflow
 */
-	if (render->matlevel == 99)
+	if (render->matlevel == 399)
 		return GZ_FAILURE;
 	render->matlevel++;
 	

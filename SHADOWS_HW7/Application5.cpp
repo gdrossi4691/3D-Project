@@ -19,19 +19,21 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#define INFILE  "newmodel_.asc"
+//#define INFILE  "teapot.asc"
 #define INFILE  "board.obj"
 #define OUTFILE  "output.ppm"
 
 #define IMAGE_SIZE  512
 
+//#define ANIMATION_ENABLED
+
 #define MAX_NUMBER_OF_TRIANGLES 150000
 
-//#define AA_ENABLED
+#define AA_ENABLED
 
 #define OBJ_ENABLED
 
-#define NUMBER_OF_LIGHTS 2 // no more then 3!
+#define NUMBER_OF_LIGHTS 1 // no more then 3!
 
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,
@@ -118,21 +120,21 @@ int Application5::Initialize()
 
 	float w;
 	/* Light */
-	GzLight	light1 = { {10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.8, 0.8, 0.9}, LIGHT_SIZE};
+	GzLight	light1 = { {9.0, 8.0, 9.0}, {0.0, 0.0, 0.0}, {0.8, 0.8, 0.9}, LIGHT_SIZE};
 	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
 	light1.position_im[0] /= w;
 	light1.position_im[1] /= w;
 	light1.position_im[2] /= w;
 
-	GzLight	light2 = { {-10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.9, 0.2, 0.3}, LIGHT_SIZE};
+	GzLight	light2 = { {-10.0, 6.0, 10.0}, {0.0, 0.0, 0.0}, {0.9, 0.2, 0.3}, LIGHT_SIZE};
 	multiplyMatrixByVector(light2.position[0], light2.position[1], light2.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light2.position_im[0]), &(light2.position_im[1]), &(light2.position_im[2]), &w);
 	light2.position_im[0] /= w;
 	light2.position_im[1] /= w;
 	light2.position_im[2] /= w;
 	
-	GzLight	light3 = { {0.0, 8.0, 15.0}, {0.0, 0.0, 0.0}, {0.2, 0.7, 0.3}, LIGHT_SIZE};
+	GzLight	light3 = { {0.0, 9.0, 12.0}, {0.0, 0.0, 0.0}, {0.2, 0.7, 0.3}, LIGHT_SIZE};
 	multiplyMatrixByVector(light3.position[0], light3.position[1], light3.position[2], m_pRender->Ximage_im[m_pRender->matlevel],
 		&(light3.position_im[0]), &(light3.position_im[1]), &(light3.position_im[2]), &w);
 	light3.position_im[0] /= w;
@@ -363,8 +365,8 @@ int Application5::LoadModel(GzCoord* vertexLists, GzCoord* normalLists, GzTextur
 					vertexLists[number_of_triangles + i][j] = vertexList[i][j];
 					normalLists[number_of_triangles + i][j] = normalList[i][j]; 
 				}	
-				uvLists[number_of_triangles + i][0] = uvLists[i][0];
-				uvLists[number_of_triangles + i][1] = uvLists[i][1];
+				uvLists[number_of_triangles + i][0] = uvList[i][0];
+				uvLists[number_of_triangles + i][1] = uvList[i][1];
 			}
 			number_of_triangles = number_of_triangles + 3;
 	}	
@@ -407,8 +409,6 @@ int Application5::Render()
 	nameListTriangle[1] = GZ_NORMAL; 
 	nameListTriangle[2] = GZ_TEXTURE_INDEX;  
 
-
-	// PASS I
 	#ifdef OBJ_ENABLED
 	Model* triangles[MAX_NUMBER_OF_TRIANGLES];
 	int number_of_triangles = LoadObjModel(triangles);
@@ -416,77 +416,104 @@ int Application5::Render()
 	#ifndef OBJ_ENABLED
 	int number_of_triangles = LoadModel(vertexLists, normalLists, uvLists);
 	#endif
-	
-	for (int k = 0; k < number_of_triangles; k++) {
-		#ifdef OBJ_ENABLED
-		valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
-		valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
-		valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
-		#endif
-		#ifndef OBJ_ENABLED
-		valueListTriangle[0] = (GzPointer)vertexLists[3*k]; 
-		valueListTriangle[1] = (GzPointer)normalLists[3*k]; 
-		valueListTriangle[2] = (GzPointer)uvLists[3*k]; 
-		#endif
-		// shadow map rendering
+
+	#ifdef ANIMATION_ENABLED
+	for (int l = 0; l < 360; l++) {
+		status |= GzInitDisplay(m_pDisplay);
+		for (int i = 0; i < AAKERNEL_SIZE; i++)
+			status |= GzInitDisplay(m_pDisplays[i]); 
 		for (int i = 0; i < m_pRender->numlights; i++) {
 			GzRender* map = m_pRender->lights_shadow_maps[i];
-			GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
+			status |= GzInitDisplay(map->display);
 		}
-	}
-	// PASS II
-	for (int k = 0; k < number_of_triangles; k++) {
-		#ifdef OBJ_ENABLED
-		valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
-		valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
-		valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
-		#endif
-		#ifndef OBJ_ENABLED
-		valueListTriangle[0] = (GzPointer)vertexLists[3 * k]; 
-		valueListTriangle[1] = (GzPointer)normalLists[3 * k]; 
-		valueListTriangle[2] = (GzPointer)uvLists[3 * k]; 
-		#endif
-		status |= GzUpdateRender(m_pRender, m_pDisplay);
-		GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
-		#ifdef AA_ENABLED
-		for (int i = 0; i < AAKERNEL_SIZE; i++) {
-			status |= GzUpdateRender(m_pRender, m_pDisplays[i]);
-			GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
+	#endif
+		// PASS I
+		for (int k = 0; k < number_of_triangles; k++) {
+			#ifdef OBJ_ENABLED
+			valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
+			valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
+			valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
+			#endif
+			#ifndef OBJ_ENABLED
+			valueListTriangle[0] = (GzPointer)vertexLists[3*k]; 
+			valueListTriangle[1] = (GzPointer)normalLists[3*k]; 
+			valueListTriangle[2] = (GzPointer)uvLists[3*k]; 
+			#endif
+			// shadow map rendering
+			for (int i = 0; i < m_pRender->numlights; i++) {
+				GzRender* map = m_pRender->lights_shadow_maps[i];
+				GzPutTriangle(map, 3, nameListTriangle, valueListTriangle); 
+			}
 		}
-		#endif
-	}
 
+		// PASS II
+		for (int k = 0; k < number_of_triangles; k++) {
+			#ifdef OBJ_ENABLED
+			valueListTriangle[0] = (GzPointer)(triangles[k]->side);   
+			valueListTriangle[1] = (GzPointer)(triangles[k]->normal); 
+			valueListTriangle[2] = (GzPointer)(triangles[k]->text);  
+			#endif
+			#ifndef OBJ_ENABLED
+			valueListTriangle[0] = (GzPointer)vertexLists[3 * k]; 
+			valueListTriangle[1] = (GzPointer)normalLists[3 * k]; 
+			valueListTriangle[2] = (GzPointer)uvLists[3 * k]; 
+			#endif
+			status |= GzUpdateRender(m_pRender, m_pDisplay);
+			GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
+			#ifdef AA_ENABLED
+			for (int i = 0; i < AAKERNEL_SIZE; i++) {
+				status |= GzUpdateRender(m_pRender, m_pDisplays[i]);
+				GzPutTriangle(m_pRender, 3, nameListTriangle, valueListTriangle); 
+			}
+			#endif
+		}
+
+		#ifdef AA_ENABLED
+		for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {
+			m_pDisplay->fbuf[l].red   = 0.0;
+			m_pDisplay->fbuf[l].green = 0.0;
+			m_pDisplay->fbuf[l].blue  = 0.0;
+			m_pDisplay->fbuf[l].z     = 0.0;
+			for (int i = 0; i < AAKERNEL_SIZE; i++) {
+					m_pDisplay->fbuf[l].red   += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].red  ;
+					m_pDisplay->fbuf[l].green += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].green;
+					m_pDisplay->fbuf[l].blue  += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].blue ;
+					m_pDisplay->fbuf[l].z     += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].z    ;
+			}
+		}
+		#endif
+		FILE *outfile;
+		char output_filie_name[15];
+		sprintf(output_filie_name, OUTFILE);
+	
+		#ifdef ANIMATION_ENABLED
+		sprintf(output_filie_name, "output_%d.ppm", l);	
+		GzMatrix mat1, mat2;
+		//GzRotXMat(-1, mat1);
+		//GzPushMatrix(m_pRender, mat1);
+		GzRotYMat(-1, mat2);
+		GzPushMatrix(m_pRender, mat2);
+		#endif
+	
+		if( (outfile  = fopen(output_filie_name, "wb" )) == NULL ) {
+			 AfxMessageBox( "The output file was not opened\n" );
+			 return GZ_FAILURE;
+		}
+	
+		GzFlushDisplay2File(outfile, m_pDisplay); 	// write out or update display to file
+			if( fclose( outfile ) )
+	    AfxMessageBox( "The output file was not closed\n" );
+	#ifdef ANIMATION_ENABLED
+	}
+	#endif
+		
+	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
+	
+	
 	#ifdef OBJ_ENABLED
 	for (int i = 0; i < number_of_triangles; i++)
 		delete triangles[i];
 	#endif
-
-	#ifdef AA_ENABLED
-	for (int l = 0; l < m_pDisplay->xres * m_pDisplay->yres; l++) {
-		m_pDisplay->fbuf[l].red   = 0.0;
-		m_pDisplay->fbuf[l].green = 0.0;
-		m_pDisplay->fbuf[l].blue  = 0.0;
-		m_pDisplay->fbuf[l].z     = 0.0;
-		for (int i = 0; i < AAKERNEL_SIZE; i++) {
-				m_pDisplay->fbuf[l].red   += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].red  ;
-				m_pDisplay->fbuf[l].green += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].green;
-				m_pDisplay->fbuf[l].blue  += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].blue ;
-				m_pDisplay->fbuf[l].z     += AAFilter[i][2]  * m_pDisplays[i]->fbuf[l].z    ;
-		}
-	}
-	#endif
-	
-	FILE *outfile;
-	if( (outfile  = fopen( OUTFILE , "wb" )) == NULL ) {
-         AfxMessageBox( "The output file was not opened\n" );
-		 return GZ_FAILURE;
-	}
-	
-	GzFlushDisplay2File(outfile, m_pDisplay); 	// write out or update display to file
-	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
-	
-	if( fclose( outfile ) )
-	    AfxMessageBox( "The output file was not closed\n" );
 
 
 	// THE END!!!

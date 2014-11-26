@@ -221,7 +221,7 @@ void Triangle::compute_color(double x_im, double y_im, double z_im, GzColor* col
 			N_E_dot_product = multipy_vectors(nx, ny, nz, ex, ey, ez);
 		}
 
-		float visibility;
+		float visibility = 1.0;
 		if (SHADOW_ALGORITHM == HARD_SHADOW_ALGORITHM)
 			visibility = GzSimpleVisibilityFn(x, y, z, render->lights_shadow_maps[i], &render->lights[i]);
 		if (SHADOW_ALGORITHM == PCF_SHADOW_ALGORITHM)

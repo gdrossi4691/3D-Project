@@ -11,16 +11,19 @@
 #define	DEFAULT_SPECULAR	{0.2, 0.3, 0.4}
 #define	DEFAULT_SPEC		32
 
-#define	MATLEVELS	100	/* how many matrix pushes allowed */
+#define	MATLEVELS	400	/* how many matrix pushes allowed */
 #define	MAX_LIGHTS	10	/* how many lights allowed */
 
 #define PI 3.141592653589793
 
+//#define VANILA // optional for PCFSS only. changes weight function for small filters.
+
+#define NO_SHADOW -1
 #define HARD_SHADOW_ALGORITHM 0
 #define PCF_SHADOW_ALGORITHM  1
 #define PCFS_SHADOW_ALGORITHM 2
 
-#define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
+#define SHADOW_ALGORITHM DIST_INVERS_WEIGHT_FN
 
 #define AVERAGE_WEIGHT_FN 0
 #define SQR_DIST_WEIGHT_FN  1
@@ -29,11 +32,12 @@
 #define WEIGHT_FN SQR_DIST_WEIGHT_FN
 
 #define	CONSTANT_BAIS  0.0001 // baist sihft
-#define	FILTER_SIZE_X 11 // odd only! used only for PCF_SHADOW_ALGORITHM
-#define	FILTER_SIZE_Y 11 // odd only! used only for PCF_SHADOW_ALGORITHM
-#define	FILTER_SIZE_LIMIT 21
+#define	FILTER_SIZE_X 21 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_Y 21 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_LIMIT_MAX 21
+#define	FILTER_SIZE_LIMIT_MIN 7
 #define LIGHT_SIZE 0.25
-#define SHADOW_MAP_SIZE 512
+#define SHADOW_MAP_SIZE 700
 
 #pragma once
 typedef struct {
