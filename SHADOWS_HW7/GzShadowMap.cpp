@@ -26,7 +26,7 @@ int GzNewShadowMapCamera(GzRender** map, GzLight* light, GzBoundingBox* bbox) {
 	(*map)->Xsp[3][3] = 1.0;
 
 	// FIXME: hardcode below:
-	GzCoord look_at_point = {5, 0, 5};
+	GzCoord look_at_point = {0, 0, 0};
 	(*map)->camera.FOV = 83; 
 	(*map)->camera.position[0] = (*light).position[0];
 	(*map)->camera.position[1] = (*light).position[1];

@@ -20,7 +20,7 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 #define INFILE  "newmodel_.asc"
-//#define INFILE  "board.obj"
+#define INFILE  "board.obj"
 #define OUTFILE  "output.ppm"
 
 #define IMAGE_SIZE  512
@@ -29,9 +29,9 @@ static char THIS_FILE[]=__FILE__;
 
 //#define AA_ENABLED
 
-//#define OBJ_ENABLED
+#define OBJ_ENABLED
 
-#define NUMBER_OF_LIGHTS 1 // no more then 3!
+#define NUMBER_OF_LIGHTS 2 // no more then 3!
 
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,

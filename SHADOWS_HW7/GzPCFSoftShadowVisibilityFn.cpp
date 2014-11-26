@@ -34,7 +34,7 @@ float Triangle::GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float 
 	int min_y = max(int_screen_y - area_radius_in_screen, 0);
 	float avg = 0.0;
 	float counter = 0.0; // counts number of samples in avg
-
+	
 	for (int i = min_y; i <= max_y; i++)
 		for (int j = min_x; j <= max_x; j++) {
 			int screen_z_from_map = display->fbuf[ARRAY(j, i)].z; 
@@ -50,13 +50,15 @@ float Triangle::GzPCFSoftShadowVisibilityFn(float world_x, float world_y, float 
 		return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, 1, 1);
 	
 	avg /= counter;
-	float filter = light_size * (d + image_z - avg) / avg;	
+	
+	float ocluder_dist = avg; 
+	float filter = (pow(abs(10.0 - image_z), 1.4) / 40.0) * light_size * (d + image_z - ocluder_dist) / ocluder_dist;	
 	int filter_size = (int)(filter * 0.5 * display->xres + 0.5);
-	if (filter_size < 17)
-		filter_size /= 2;
-	if (filter_size % 2 == 0)
+	if (filter_size % 2 == 0)	
 		filter_size++;
 	if (filter_size > FILTER_SIZE_LIMIT)
 		filter_size = FILTER_SIZE_LIMIT;
+	if (filter_size < 5)
+		filter_size = 5;
 	return GzPCFVisibilityFn(world_x, world_y, world_z, map, light, filter_size, filter_size);
 }

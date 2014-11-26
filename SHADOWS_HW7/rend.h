@@ -29,9 +29,9 @@
 #define WEIGHT_FN SQR_DIST_WEIGHT_FN
 
 #define	CONSTANT_BAIS  0.0001 // baist sihft
-#define	FILTER_SIZE_X 17 // odd only! used only for PCF_SHADOW_ALGORITHM
-#define	FILTER_SIZE_Y 17 // odd only! used only for PCF_SHADOW_ALGORITHM
-#define	FILTER_SIZE_LIMIT 31
+#define	FILTER_SIZE_X 11 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_Y 11 // odd only! used only for PCF_SHADOW_ALGORITHM
+#define	FILTER_SIZE_LIMIT 21
 #define LIGHT_SIZE 0.25
 #define SHADOW_MAP_SIZE 512
 
