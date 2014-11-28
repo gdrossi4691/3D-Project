@@ -112,7 +112,7 @@ float invers_sqr_dist_weight_fn(float x1, float y1, float x2, float y2) {
 	return distance_sqr(x1, y1, x2, y2);
 }
 float sqr_dist_weight_fn(float x1, float y1, float x2, float y2, float radius_sqr) {
-	return radius_sqr - distance_sqr(x1, y1, x2, y2);
+	return 1.5 * radius_sqr - distance_sqr(x1, y1, x2, y2);
 }
 
 float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, GzRender* map, GzLight* light, int filter_size_x, int filter_size_y) {
