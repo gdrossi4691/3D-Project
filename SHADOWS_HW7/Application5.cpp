@@ -27,13 +27,16 @@ static char THIS_FILE[]=__FILE__;
 
 //#define ANIMATION_ENABLED
 
+#define MIN_ANGLE 0
+#define MAX_ANGLE 360 // excluded
+
 #define MAX_NUMBER_OF_TRIANGLES 150000
 
 #define AA_ENABLED
 
 #define OBJ_ENABLED
 
-#define NUMBER_OF_LIGHTS 1 // no more then 3!
+#define NUMBER_OF_LIGHTS 2 // no more then 3!
 
 float   AAFilter[AAKERNEL_SIZE][3] 	= /* each sample is defined by Xshift, Yshift, weight*/
 		{  -0.52, 0.38, 0.128,                  0.41, 0.56, 0.119,                     0.27, 0.08, 0.294,
@@ -120,21 +123,21 @@ int Application5::Initialize()
 
 	float w;
 	/* Light */
-	GzLight	light1 = { {9.0, 8.0, 9.0}, {0.0, 0.0, 0.0}, {0.8, 0.8, 0.9}, LIGHT_SIZE};
+	GzLight	light1 = { {10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.8, 0.8, 0.9}, LIGHT_SIZE};
 	multiplyMatrixByVector(light1.position[0], light1.position[1], light1.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light1.position_im[0]), &(light1.position_im[1]), &(light1.position_im[2]), &w);
 	light1.position_im[0] /= w;
 	light1.position_im[1] /= w;
 	light1.position_im[2] /= w;
 
-	GzLight	light2 = { {-10.0, 6.0, 10.0}, {0.0, 0.0, 0.0}, {0.9, 0.2, 0.3}, LIGHT_SIZE};
+	GzLight	light2 = { {-10.0, 8.0, 10.0}, {0.0, 0.0, 0.0}, {0.9, 0.2, 0.3}, LIGHT_SIZE};
 	multiplyMatrixByVector(light2.position[0], light2.position[1], light2.position[2], m_pRender->Ximage_im[m_pRender->matlevel], 
 		&(light2.position_im[0]), &(light2.position_im[1]), &(light2.position_im[2]), &w);
 	light2.position_im[0] /= w;
 	light2.position_im[1] /= w;
 	light2.position_im[2] /= w;
 	
-	GzLight	light3 = { {0.0, 9.0, 12.0}, {0.0, 0.0, 0.0}, {0.2, 0.7, 0.3}, LIGHT_SIZE};
+	GzLight	light3 = { {0.0, 9.0, 9.0}, {0.0, 0.0, 0.0}, {0.2, 0.7, 0.3}, LIGHT_SIZE};
 	multiplyMatrixByVector(light3.position[0], light3.position[1], light3.position[2], m_pRender->Ximage_im[m_pRender->matlevel],
 		&(light3.position_im[0]), &(light3.position_im[1]), &(light3.position_im[2]), &w);
 	light3.position_im[0] /= w;
@@ -418,7 +421,12 @@ int Application5::Render()
 	#endif
 
 	#ifdef ANIMATION_ENABLED
-	for (int l = 0; l < 360; l++) {
+	GzMatrix mat1, mat2;
+	if (MIN_ANGLE != 0) {
+		GzRotYMat(-MIN_ANGLE, mat2);
+		GzPushMatrix(m_pRender, mat2);
+	}
+	for (int l = MIN_ANGLE; l < MAX_ANGLE; l++) {
 		status |= GzInitDisplay(m_pDisplay);
 		for (int i = 0; i < AAKERNEL_SIZE; i++)
 			status |= GzInitDisplay(m_pDisplays[i]); 
@@ -488,7 +496,6 @@ int Application5::Render()
 	
 		#ifdef ANIMATION_ENABLED
 		sprintf(output_filie_name, "output_%d.ppm", l);	
-		GzMatrix mat1, mat2;
 		//GzRotXMat(-1, mat1);
 		//GzPushMatrix(m_pRender, mat1);
 		GzRotYMat(-1, mat2);

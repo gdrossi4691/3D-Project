@@ -23,7 +23,7 @@
 #define PCF_SHADOW_ALGORITHM  1
 #define PCFS_SHADOW_ALGORITHM 2
 
-#define SHADOW_ALGORITHM PCF_SHADOW_ALGORITHM
+#define SHADOW_ALGORITHM PCFS_SHADOW_ALGORITHM
 
 #define AVERAGE_WEIGHT_FN 0
 #define SQR_DIST_WEIGHT_FN  1
@@ -31,7 +31,7 @@
 
 #define WEIGHT_FN SQR_DIST_WEIGHT_FN
 
-#define	CONSTANT_BAIS  0.0001 // baist sihft
+#define	CONSTANT_BAIS  0.1 // biast shift
 #define	FILTER_SIZE_X 21 // odd only! used only for PCF_SHADOW_ALGORITHM
 #define	FILTER_SIZE_Y 21 // odd only! used only for PCF_SHADOW_ALGORITHM
 #define	FILTER_SIZE_LIMIT_MAX 21
