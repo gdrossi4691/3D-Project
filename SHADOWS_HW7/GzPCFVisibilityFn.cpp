@@ -198,7 +198,7 @@ float Triangle::GzPCFVisibilityFn(float world_x, float world_y, float world_z, G
 		}
 
 		float diff = image_z_rotated - z_from_map; // compare z in image space 
-		if (diff <= 1000*CONSTANT_BAIS)
+		if (diff <= CONSTANT_BAIS)
 			return 1.0;
 		else 
 			return 0.0;
